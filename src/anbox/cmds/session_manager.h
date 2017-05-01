@@ -26,7 +26,10 @@
 
 #include <core/dbus/bus.h>
 
+#ifndef USE_HEADLESS
 #include "anbox/graphics/gl_renderer_server.h"
+#endif
+
 #include "anbox/graphics/rect.h"
 
 namespace anbox {
@@ -46,7 +49,9 @@ class SessionManager : public cli::CommandWithFlagsAndAction {
 
   std::shared_ptr<container::Client> container_;
   std::string desktop_file_hint_;
+#ifndef USE_HEADLESS
   graphics::GLRendererServer::Config::Driver gles_driver_;
+#endif
   bool single_window_ = false;
   graphics::Rect window_size_;
   bool standalone_ = false;

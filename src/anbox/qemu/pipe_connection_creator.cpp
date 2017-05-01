@@ -140,9 +140,12 @@ std::shared_ptr<network::MessageProcessor>
 PipeConnectionCreator::create_processor(
     const client_type &type,
     const std::shared_ptr<network::SocketMessenger> &messenger) {
+#ifndef USE_HEADLESS
   if (type == client_type::opengles)
     return std::make_shared<graphics::OpenGlesMessageProcessor>(renderer_, messenger);
-  else if (type == client_type::qemud_boot_properties)
+  else
+#endif
+  if (type == client_type::qemud_boot_properties)
     return std::make_shared<qemu::BootPropertiesMessageProcessor>(messenger);
   else if (type == client_type::qemud_hw_control)
     return std::make_shared<qemu::HwControlMessageProcessor>(messenger);

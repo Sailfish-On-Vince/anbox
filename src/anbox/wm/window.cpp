@@ -16,7 +16,11 @@
  */
 
 #include "anbox/wm/window.h"
+#ifdef USE_HEADLESS
+#include "anbox/graphics/dummy_renderer.h"
+#else
 #include "anbox/graphics/emugl/Renderer.h"
+#endif
 #include "anbox/logger.h"
 
 namespace anbox {
@@ -49,7 +53,9 @@ std::string Window::title() const { return title_; }
 bool Window::attach() {
   if (!renderer_)
     return false;
+#ifndef USE_HEADLESS
   attached_ = renderer_->createNativeWindow(native_handle());
+#endif
   return attached_;
 }
 

@@ -76,6 +76,7 @@ class NullConnectionCreator : public anbox::network::ConnectionCreator<
   }
 };
 
+#ifndef USE_HEADLESS
 std::istream& operator>>(std::istream& in, anbox::graphics::GLRendererServer::Config::Driver& driver) {
   std::string str(std::istreambuf_iterator<char>(in), {});
   if (str.empty() || str == "translator")
@@ -86,6 +87,7 @@ std::istream& operator>>(std::istream& in, anbox::graphics::GLRendererServer::Co
    BOOST_THROW_EXCEPTION(std::runtime_error("Invalid GLES driver value provided"));
   return in;
 }
+#endif
 }
 
 void anbox::cmds::SessionManager::launch_appmgr_if_needed(const std::shared_ptr<bridge::AndroidApiStub> &android_api_stub) {
@@ -103,7 +105,9 @@ void anbox::cmds::SessionManager::launch_appmgr_if_needed(const std::shared_ptr<
 anbox::cmds::SessionManager::SessionManager()
     : CommandWithFlagsAndAction{cli::Name{"session-manager"}, cli::Usage{"session-manager"},
                                 cli::Description{"Run the the anbox session manager"}},
+#ifndef USE_HEADLESS
       gles_driver_(graphics::GLRendererServer::Config::Driver::Host),
+#endif
       window_size_(default_single_window_size) {
   // Just for the purpose to allow QtMir (or unity8) to find this on our
   // /proc/*/cmdline
@@ -111,9 +115,11 @@ anbox::cmds::SessionManager::SessionManager()
   flag(cli::make_flag(cli::Name{"desktop_file_hint"},
                       cli::Description{"Desktop file hint for QtMir/Unity8"},
                       desktop_file_hint_));
+#ifndef USE_HEADLESS
   flag(cli::make_flag(cli::Name{"gles-driver"},
                       cli::Description{"Which GLES driver to use. Possible values are 'host' or'translator'"},
                       gles_driver_));
+#endif
   flag(cli::make_flag(cli::Name{"single-window"},
                       cli::Description{"Start in single window mode."},
                       single_window_));
@@ -190,11 +196,15 @@ anbox::cmds::SessionManager::SessionManager()
       using_single_window = true;
     }
 
+#ifndef USE_HEADLESS
     auto gl_server = std::make_shared<graphics::GLRendererServer>(
           graphics::GLRendererServer::Config{gles_driver_, single_window_}, window_manager);
+#endif
 
     platform->set_window_manager(window_manager);
+#ifndef USE_HEADLESS
     platform->set_renderer(gl_server->renderer());
+#endif
     window_manager->setup();
 
     auto app_manager = std::static_pointer_cast<application::Manager>(android_api_stub);
@@ -210,12 +220,14 @@ anbox::cmds::SessionManager::SessionManager()
 
     const auto socket_path = SystemConfiguration::instance().socket_dir();
 
+#ifndef USE_HEADLESS
     // The qemu pipe is used as a very fast communication channel between guest
     // and host for things like the GLES emulation/translation, the RIL or ADB.
     auto qemu_pipe_connector =
         std::make_shared<network::PublishedSocketConnector>(
             utils::string_format("%s/qemu_pipe", socket_path), rt,
             std::make_shared<qemu::PipeConnectionCreator>(gl_server->renderer(), rt));
+#endif
 
     boost::asio::deadline_timer appmgr_start_timer(rt->service());
 
@@ -251,7 +263,9 @@ anbox::cmds::SessionManager::SessionManager()
     container::Configuration container_configuration;
     if (!standalone_) {
       container_configuration.bind_mounts = {
+#ifndef USE_HEADLESS
         {qemu_pipe_connector->socket_file(), "/dev/qemu_pipe"},
+#endif
         {bridge_connector->socket_file(), "/dev/anbox_bridge"},
         {audio_server->socket_file(), "/dev/anbox_audio"},
         {SystemConfiguration::instance().input_device_dir(), "/dev/input"},

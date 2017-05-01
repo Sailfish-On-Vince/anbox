@@ -67,10 +67,12 @@ Window::Window(const std::shared_ptr<Renderer> &renderer,
   SDL_VERSION(&info.version);
   SDL_GetWindowWMInfo(window_, &info);
   switch (info.subsystem) {
+#if defined(X11_SUPPORT)
     case SDL_SYSWM_X11:
       native_display_ = static_cast<EGLNativeDisplayType>(info.info.x11.display);
       native_window_ = static_cast<EGLNativeWindowType>(info.info.x11.window);
       break;
+#endif
 #if defined(MIR_SUPPORT)
     case SDL_SYSWM_MIR: {
       native_display_ = static_cast<EGLNativeDisplayType>(mir_connection_get_egl_native_display(info.info.mir.connection));

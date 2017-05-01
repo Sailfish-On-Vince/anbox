@@ -30,6 +30,40 @@ include_directories(
   ${CMAKE_BINARY_DIR}/external/android-emugl/host/libs/renderControl_dec
 )
 
+if(USE_HEADLESS)
+  set(GRAPHICS_SOURCES
+    anbox/graphics/emugl/DisplayManager.cpp
+    anbox/graphics/dummy_renderable.cpp
+    anbox/graphics/dummy_renderer.h
+    )
+
+  set(GRAPHICS_LIBRARIES
+    boost_program_options #why
+    EGL)
+else(USE_HEADLESS)
+  set(GRAPHICS_SOURCES
+    anbox/graphics/gl_renderer_server.cpp
+    anbox/graphics/opengles_message_processor.cpp
+    anbox/graphics/program_family.cpp
+    anbox/graphics/emugl/ColorBuffer.cpp
+    anbox/graphics/emugl/DisplayManager.cpp
+    anbox/graphics/emugl/RendererConfig.cpp
+    anbox/graphics/emugl/Renderable.cpp
+    anbox/graphics/emugl/Renderer.cpp
+    anbox/graphics/emugl/ReadBuffer.cpp
+    anbox/graphics/emugl/RenderApi.cpp
+    anbox/graphics/emugl/RenderContext.cpp
+    anbox/graphics/emugl/RenderControl.cpp
+    anbox/graphics/emugl/RenderThread.cpp
+    anbox/graphics/emugl/RenderThreadInfo.cpp
+    anbox/graphics/emugl/TextureDraw.cpp
+    anbox/graphics/emugl/TextureResize.cpp
+    anbox/graphics/emugl/TimeUtils.cpp
+    anbox/graphics/emugl/WindowSurface.cpp)
+
+  set(GRAPHICS_LIBRARIES GLESv1_dec GLESv2_dec renderControl_dec OpenGLESDispatch OpenglCodecCommon)
+endif(USE_HEADLESS)
+
 protobuf_generate_cpp(
     GENERATED_PROTOBUF_RPC_SRCS GENERATED_PROTOBUF_RPC_HDRS
     anbox/protobuf/anbox_rpc.proto)
@@ -118,35 +152,16 @@ set(SOURCES
     anbox/rpc/template_message_processor.h
     anbox/rpc/make_protobuf_object.h
 
-    anbox/graphics/opengles_message_processor.cpp
     anbox/graphics/buffer_queue.cpp
     anbox/graphics/buffered_io_stream.cpp
-    anbox/graphics/gl_renderer_server.cpp
     anbox/graphics/density.h
     anbox/graphics/rect.cpp
     anbox/graphics/layer_composer.cpp
     anbox/graphics/multi_window_composer_strategy.cpp
     anbox/graphics/single_window_composer_strategy.cpp
-    anbox/graphics/program_family.cpp
     anbox/graphics/primitives.h
     anbox/graphics/renderer.h
     anbox/graphics/gl_extensions.h
-
-    anbox/graphics/emugl/ColorBuffer.cpp
-    anbox/graphics/emugl/DisplayManager.cpp
-    anbox/graphics/emugl/RendererConfig.cpp
-    anbox/graphics/emugl/Renderable.cpp
-    anbox/graphics/emugl/Renderer.cpp
-    anbox/graphics/emugl/ReadBuffer.cpp
-    anbox/graphics/emugl/RenderApi.cpp
-    anbox/graphics/emugl/RenderContext.cpp
-    anbox/graphics/emugl/RenderControl.cpp
-    anbox/graphics/emugl/RenderThread.cpp
-    anbox/graphics/emugl/RenderThreadInfo.cpp
-    anbox/graphics/emugl/TextureDraw.cpp
-    anbox/graphics/emugl/TextureResize.cpp
-    anbox/graphics/emugl/TimeUtils.cpp
-    anbox/graphics/emugl/WindowSurface.cpp
 
     anbox/audio/server.cpp
     anbox/audio/client_info.h
@@ -216,12 +231,27 @@ set(SOURCES
     anbox/optional.h
     anbox/defer_action.h)
 
-add_library(anbox-core STATIC ${SOURCES})
+
+if (NOT USE_HEADLESS)
+set(GL_LIBRARIES
+   GLESv1_dec
+   GLESv2_dec
+   renderControl_dec
+   OpenGLESDispatch
+   OpenglCodecCommon
+   )
+else (NOT USE_HEADLESS)
+set(GL_LIBRARIES
+   )
+endif (NOT USE_HEADLESS)
+
+add_library(anbox-core STATIC ${SOURCES} ${GRAPHICS_SOURCES})
 target_link_libraries(anbox-core
   ${Boost_LDFLAGS}
   ${Boost_LIBRARIES}
   ${DBUS_CPP_LDFLAGS}
   ${DBUS_CPP_LIBRARIES}
+  ${GRAPHICS_LIBRARIES}
   ${SDL2_LDFLAGS}
   ${SDL2_LIBRARIES}
   ${SDL2_IMAGE_LDFLAGS}
@@ -233,17 +263,13 @@ target_link_libraries(anbox-core
   pthread
   process-cpp
   emugl_common
-  GLESv1_dec
-  GLESv2_dec
-  renderControl_dec
-  OpenGLESDispatch
-  OpenglCodecCommon
+  ${GL_LIBRARIES}
   anbox-protobuf
   xdg)
 
 add_executable(anbox main.cpp)
 target_link_libraries(anbox
-    anbox-core)
+    anbox-core ${GRAPHICS_LIBRARIES})
 
 install(
   TARGETS anbox

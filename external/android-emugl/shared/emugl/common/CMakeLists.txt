@@ -26,6 +26,9 @@ set(COMMON_SOURCES
     thread_store.h
     unique_integer_map.h)
 
+include_directories(
+  ${CMAKE_SOURCE_DIR}/external/android-emugl/shared
+)
 
 if(BUILD_TESTING)
   set(COMMON_SOURCES ${COMMON_SOURCES} thread_unittest.cpp mutex_unittest.cpp)

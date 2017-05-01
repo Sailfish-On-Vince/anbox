@@ -16,8 +16,6 @@
  */
 
 #include "anbox/cmds/system_info.h"
-#include "anbox/graphics/emugl/RenderApi.h"
-#include "anbox/graphics/emugl/DispatchTables.h"
 #include "anbox/utils/environment_file.h"
 #include "anbox/logger.h"
 
@@ -28,7 +26,11 @@
 
 #include <boost/filesystem.hpp>
 
+#ifndef USE_HEADLESS
+#include "anbox/graphics/emugl/RenderApi.h"
+#include "anbox/graphics/emugl/DispatchTables.h"
 #include "OpenGLESDispatch/EGLDispatch.h"
+#endif
 
 namespace fs = boost::filesystem;
 
@@ -129,6 +131,8 @@ class SystemInformation {
   }
 
   void collect_graphics_info() {
+    //FIXME: Add case for headless
+#ifndef USE_HEADLESS
     auto gl_libs = anbox::graphics::emugl::default_gl_libraries(true);
     if (!anbox::graphics::emugl::initialize(gl_libs, nullptr, nullptr)) {
       return;
@@ -171,6 +175,7 @@ class SystemInformation {
         }
       }
     }
+#endif
   }
 
   struct {

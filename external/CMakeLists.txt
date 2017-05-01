@@ -1,3 +1,7 @@
 add_subdirectory(process-cpp-minimal)
-add_subdirectory(android-emugl)
 add_subdirectory(xdg)
+if (NOT USE_HEADLESS)
+    add_subdirectory(android-emugl)
+else (NOT USE_HEADLESS)
+    add_subdirectory(android-emugl/shared)
+endif (NOT USE_HEADLESS)

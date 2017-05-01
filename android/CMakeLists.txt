@@ -28,6 +28,9 @@ set(HWCOMPOSER_SOURCES
     hwcomposer/hwcomposer.cpp)
 
 add_library(hwcomposer.anbox SHARED ${HWCOMPOSER_SOURCES})
+target_link_libraries(hwcomposer.anbox
+    EGL
+)
 
 set(AUDIO_SOURCES
     audio/audio_hw.cpp)
