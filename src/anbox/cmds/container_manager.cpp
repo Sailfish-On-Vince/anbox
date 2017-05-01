@@ -122,6 +122,10 @@ bool anbox::cmds::ContainerManager::setup_mounts() {
   if (!fs::exists(android_rootfs_dir))
     fs::create_directory(android_rootfs_dir);
 
+  const auto android_overlay_dir = SystemConfiguration::instance().overlay_dir();
+  if (!fs::exists(android_overlay_dir))
+    fs::create_directory(android_overlay_dir);
+
   // We prefer using the kernel for mounting the squashfs image but
   // for some cases (unprivileged containers) where no loop support
   // is available we do the mount instead via squashfuse which will
@@ -182,6 +186,14 @@ bool anbox::cmds::ContainerManager::setup_mounts() {
     ERROR("No loop device or FUSE support found. Can't setup Android rootfs!");
     return false;
   }
+
+  std::string options = "lowerdir=" + android_rootfs_dir + ",upperdir=" + SystemConfiguration::instance().overlay_dir();
+  auto o = common::MountEntry::create("overlayfs", android_rootfs_dir, "overlayfs", MS_MGC_VAL | MS_RDONLY | MS_PRIVATE, options);
+  if(!o) {
+    ERROR("Failed to mount Android overlay");
+    return false;
+  }
+  mounts_.push_back(o);
 
   for (const auto &dir_name : std::vector<std::string>{"cache", "data"}) {
     auto target_dir_path = fs::path(android_rootfs_dir) / dir_name;

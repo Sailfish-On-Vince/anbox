@@ -25,6 +25,8 @@ namespace common {
 class LoopDevice;
 class MountEntry {
  public:
+  static std::shared_ptr<MountEntry> create(const std::string &type, const boost::filesystem::path &target, const std::string &fs_type, unsigned long flags, std::string &options);
+
   static std::shared_ptr<MountEntry> create(const boost::filesystem::path &src, const boost::filesystem::path &target,
                                             const std::string &fs_type = "", unsigned long flags = 0, const std::string &data = "");
 

@@ -23,6 +23,21 @@
 
 namespace anbox {
 namespace common {
+
+std::shared_ptr<MountEntry> MountEntry::create(const std::string &type, const boost::filesystem::path &target, const std::string &fs_type, unsigned long flags, std::string &options)
+{
+    auto entry = std::shared_ptr<MountEntry>(new MountEntry(target));
+    if(!entry)
+      return nullptr;
+
+    if(::mount(type.c_str(), target.c_str(), fs_type.c_str(), flags, options.c_str()) != 0)
+      return nullptr;
+
+    entry->active_ = true;
+
+    return entry;
+}
+
 std::shared_ptr<MountEntry> MountEntry::create(const boost::filesystem::path &src, const boost::filesystem::path &target,
                                                const std::string &fs_type, unsigned long flags, const std::string &data) {
   auto entry = std::shared_ptr<MountEntry>(new MountEntry(target));
