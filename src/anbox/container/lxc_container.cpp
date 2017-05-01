@@ -27,6 +27,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <sys/capability.h>
 #include <sys/prctl.h>
@@ -166,8 +167,8 @@ void LxcContainer::start(const Configuration &configuration) {
     container_->stop(container_);
   }
 
+  const auto container_config_dir = SystemConfiguration::instance().container_config_dir();
   if (!container_) {
-    const auto container_config_dir = SystemConfiguration::instance().container_config_dir();
     DEBUG("Containers are stored in %s", container_config_dir);
 
     // Remove container config to be be able to rewrite it
@@ -239,6 +240,24 @@ void LxcContainer::start(const Configuration &configuration) {
   bind_mounts.insert({"/dev/tty", "dev/tty"});
   bind_mounts.insert({"/dev/urandom", "dev/urandom"});
   bind_mounts.insert({"/dev/zero", "dev/zero"});
+
+  const auto extra_bind_mounts_file_path = utils::string_format("%s/default/extra_bind_mounts", container_config_dir);
+  if(fs::exists(extra_bind_mounts_file_path)) {
+    std::string line;
+    std::ifstream in(extra_bind_mounts_file_path.c_str());
+    if(in.is_open()) {
+      while(getline(in, line)) {
+        std::vector<std::string> strs;
+        boost::split(strs, line, boost::is_any_of(" \t"));
+        if(strs.size() == 1 && strs[0] == "") {
+        } else if(strs.size() != 2) {
+          WARNING("unknown bind mount: %s\n", line.c_str());
+        } else if(strs.size() == 2) {
+          bind_mounts.insert({strs[0], strs[1]});
+        }
+      }
+    }
+  }
 
   for (const auto &bind_mount : bind_mounts) {
     std::string create_type = "file";
