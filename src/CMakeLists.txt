@@ -67,7 +67,6 @@ set(SOURCES
     anbox/build/config.h.in
 
     anbox/android/intent.cpp
-    anbox/android/ip_config_builder.cpp
 
     anbox/common/fd.cpp
     anbox/common/fd_sets.h
@@ -81,7 +80,6 @@ set(SOURCES
     anbox/common/loop_device.cpp
     anbox/common/loop_device_allocator.cpp
     anbox/common/mount_entry.cpp
-    anbox/common/binary_writer.cpp
 
     anbox/testing/gtest_utils.h
 
