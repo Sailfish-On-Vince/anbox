@@ -38,9 +38,25 @@ IPV6_PROXY="false"
 use_iptables_lock="-w"
 iptables -w -L -n > /dev/null 2>&1 || use_iptables_lock=""
 
+_iptables() {
+    if [ "${use_iptables_lock}" == "" ]; then
+        iptables "$@"
+    else
+        iptables "{use_iptables_lock}" "$@"
+    fi
+}
+
+_ip6tables() {
+    if [ "${use_iptables_lock}" == "" ]; then
+        ip6tables "$@"
+    else
+        ip6tables "{use_iptables_lock}" "$@"
+    fi
+}
+
 HAS_IPV6=false
-[ -e "/proc/sys/net/ipv6/conf/default/disable_ipv6" ] && \
-    [ "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" = "0" ] && HAS_IPV6=true
+#[ -e "/proc/sys/net/ipv6/conf/default/disable_ipv6" ] && \
+#    [ "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" = "0" ] && HAS_IPV6=true
 
 _netmask2cidr () {
     # Assumes there's no "255." after a non-255 byte in the mask
@@ -116,7 +132,7 @@ start() {
     if [ -n "${IPV4_ADDR}" ] && [ -n "${IPV4_NETMASK}" ] && [ -n "${IPV4_NETWORK}" ]; then
         echo 1 > /proc/sys/net/ipv4/ip_forward
         if [ "${IPV4_NAT}" = "true" ]; then
-            iptables "${use_iptables_lock}" -t nat -A POSTROUTING -s "${IPV4_NETWORK}" ! -d "${IPV4_NETWORK}" -j MASQUERADE -m comment --comment "managed by anbox-bridge"
+            _iptables -t nat -A POSTROUTING -s "${IPV4_NETWORK}" ! -d "${IPV4_NETWORK}" -j MASQUERADE -m comment --comment "managed by anbox-bridge"
         fi
         IPV4_ARG="--listen-address ${IPV4_ADDR} --dhcp-range ${IPV4_DHCP_RANGE} --dhcp-lease-max=${IPV4_DHCP_MAX}"
     fi
@@ -134,18 +150,18 @@ start() {
 
         ip -6 addr add dev "${BRIDGE}" "${IPV6_ADDR}/${IPV6_MASK}"
         if [ "${IPV6_NAT}" = "true" ]; then
-            ip6tables "${use_iptables_lock}" -t nat -A POSTROUTING -s "${IPV6_NETWORK}" ! -d "${IPV6_NETWORK}" -j MASQUERADE -m comment --comment "managed by anbox-bridge"
+            _ip6tables -t nat -A POSTROUTING -s "${IPV6_NETWORK}" ! -d "${IPV6_NETWORK}" -j MASQUERADE -m comment --comment "managed by anbox-bridge"
         fi
         IPV6_ARG="--dhcp-range=${IPV6_ADDR},ra-stateless,ra-names --listen-address ${IPV6_ADDR}"
     fi
 
-    iptables "${use_iptables_lock}" -I INPUT -i "${BRIDGE}" -p udp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-    iptables "${use_iptables_lock}" -I INPUT -i "${BRIDGE}" -p tcp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-    iptables "${use_iptables_lock}" -I INPUT -i "${BRIDGE}" -p udp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-    iptables "${use_iptables_lock}" -I INPUT -i "${BRIDGE}" -p tcp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-    iptables "${use_iptables_lock}" -I FORWARD -i "${BRIDGE}" -j ACCEPT -m comment --comment "managed by anbox-bridge"
-    iptables "${use_iptables_lock}" -I FORWARD -o "${BRIDGE}" -j ACCEPT -m comment --comment "managed by anbox-bridge"
-    iptables "${use_iptables_lock}" -t mangle -A POSTROUTING -o "${BRIDGE}" -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill -m comment --comment "managed by anbox-bridge"
+    _iptables -I INPUT -i "${BRIDGE}" -p udp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+    _iptables -I INPUT -i "${BRIDGE}" -p tcp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+    _iptables -I INPUT -i "${BRIDGE}" -p udp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+    _iptables -I INPUT -i "${BRIDGE}" -p tcp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+    _iptables -I FORWARD -i "${BRIDGE}" -j ACCEPT -m comment --comment "managed by anbox-bridge"
+    _iptables -I FORWARD -o "${BRIDGE}" -j ACCEPT -m comment --comment "managed by anbox-bridge"
+    _iptables -t mangle -A POSTROUTING -o "${BRIDGE}" -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill -m comment --comment "managed by anbox-bridge"
 
     DOMAIN_ARG=""
     if [ -n "${DOMAIN}" ]; then
@@ -185,20 +201,20 @@ stop() {
 
     if [ -d /sys/class/net/${BRIDGE} ]; then
         ifdown ${BRIDGE}
-        iptables ${use_iptables_lock} -D INPUT -i ${BRIDGE} -p udp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-        iptables ${use_iptables_lock} -D INPUT -i ${BRIDGE} -p tcp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-        iptables ${use_iptables_lock} -D INPUT -i ${BRIDGE} -p udp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-        iptables ${use_iptables_lock} -D INPUT -i ${BRIDGE} -p tcp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-        iptables ${use_iptables_lock} -D FORWARD -i ${BRIDGE} -j ACCEPT -m comment --comment "managed by anbox-bridge"
-        iptables ${use_iptables_lock} -D FORWARD -o ${BRIDGE} -j ACCEPT -m comment --comment "managed by anbox-bridge"
-        iptables ${use_iptables_lock} -t mangle -D POSTROUTING -o ${BRIDGE} -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill -m comment --comment "managed by anbox-bridge"
+        _iptables -D INPUT -i ${BRIDGE} -p udp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+        _iptables -D INPUT -i ${BRIDGE} -p tcp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+        _iptables -D INPUT -i ${BRIDGE} -p udp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+        _iptables -D INPUT -i ${BRIDGE} -p tcp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+        _iptables -D FORWARD -i ${BRIDGE} -j ACCEPT -m comment --comment "managed by anbox-bridge"
+        _iptables -D FORWARD -o ${BRIDGE} -j ACCEPT -m comment --comment "managed by anbox-bridge"
+        _iptables -t mangle -D POSTROUTING -o ${BRIDGE} -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill -m comment --comment "managed by anbox-bridge"
 
         if [ -n "${IPV4_NETWORK}" ] && [ "${IPV4_NAT}" = "true" ]; then
-            iptables ${use_iptables_lock} -t nat -D POSTROUTING -s ${IPV4_NETWORK} ! -d ${IPV4_NETWORK} -j MASQUERADE -m comment --comment "managed by anbox-bridge"
+            _iptables -t nat -D POSTROUTING -s ${IPV4_NETWORK} ! -d ${IPV4_NETWORK} -j MASQUERADE -m comment --comment "managed by anbox-bridge"
         fi
 
         if [ "${HAS_IPV6}" = "true" ] && [ -n "${IPV6_NETWORK}" ] && [ "${IPV6_NAT}" = "true" ]; then
-            ip6tables ${use_iptables_lock} -t nat -D POSTROUTING -s ${IPV6_NETWORK} ! -d ${IPV6_NETWORK} -j MASQUERADE -m comment --comment "managed by anbox-bridge"
+            _ip6tables -t nat -D POSTROUTING -s ${IPV6_NETWORK} ! -d ${IPV6_NETWORK} -j MASQUERADE -m comment --comment "managed by anbox-bridge"
         fi
 
         if [ -e "${varrun}/dnsmasq.pid" ]; then
