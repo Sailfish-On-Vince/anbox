@@ -23,6 +23,7 @@ BuildRequires:  pkgconfig(sdl2)
 BuildRequires:  protobuf-lite-devel
 BuildRequires:  properties-cpp-devel
 BuildRequires:  pkgconfig(libcap)
+BuildRequires:  pkgconfig(audioresource)
 
 Requires:  binutils
 Requires:  boost-filesystem

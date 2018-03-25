@@ -80,6 +80,8 @@ option(USE_HEADLESS "Use Headless Graphics Backend instead of Android EmuGL" OFF
 if(USE_HEADLESS)
   pkg_check_modules(WAYLAND_CLIENT wayland-client REQUIRED)
   pkg_check_modules(WAYLAND_EGL wayland-egl REQUIRED)
+  pkg_check_modules(AUDIORESOURCE audioresource REQUIRED)
+  pkg_check_modules(GLIB glib-2.0 REQUIRED)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_HEADLESS -DWAYLAND_SUPPORT")
 else(USE_HEADLESS)
   pkg_check_modules(WAYLAND_CLIENT wayland-client)
