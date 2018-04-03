@@ -91,44 +91,6 @@ static int hwc_prepare(hwc_composer_device_1_t *dev,
             displays[0]->hwLayers[i].compositionType = HWC_FRAMEBUFFER;
         }
     }
-    if (displays[0]->flags & HWC_GEOMETRY_CHANGED) {
-        const size_t& num_hw_layers = displays[0]->numHwLayers;
-        size_t i = 1;
-        bool visible = (num_hw_layers == 1);
-
-        // Iterate backwards and skip the first (end) layer, which is the
-        // framebuffer target layer. According to the SurfaceFlinger folks, the
-        // actual location of this layer is up to the HWC implementation to
-        // decide, but is in the well know last slot of the list. This does not
-        // imply that the framebuffer target layer must be topmost.
-        for (; i < num_hw_layers; i++) {
-          hwc_layer_1_t* layer = &displays[0]->hwLayers[num_hw_layers - 1 - i];
-
-#if 0
-          dump_layer(layer);
-#endif
-
-          if (layer->flags & HWC_SKIP_LAYER) {
-            // All layers below and including this one will be drawn into the
-            // framebuffer. Stop marking further layers as HWC_OVERLAY.
-            visible = true;
-            break;
-          }
-
-          switch (layer->compositionType) {
-            case HWC_OVERLAY:
-            case HWC_FRAMEBUFFER:
-              layer->compositionType = HWC_OVERLAY;
-              break;
-            case HWC_BACKGROUND:
-              break;
-            default:
-              ALOGE("hwcomposor: Invalid compositionType %d",
-                      layer->compositionType);
-              break;
-          }
-       }
-    }
     return 0;
 }
 
