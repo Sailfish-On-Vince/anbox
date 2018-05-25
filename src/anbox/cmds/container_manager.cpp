@@ -20,10 +20,9 @@
 #include "anbox/common/loop_device_allocator.h"
 #include "anbox/logger.h"
 #include "anbox/runtime.h"
-#include "anbox/system_configuration.h"
+#include "anbox/config.h"
 
 #include "core/posix/signal.h"
-#include "core/posix/exec.h"
 
 #include <sys/mount.h>
 #include <linux/loop.h>
@@ -80,9 +79,6 @@ anbox::cmds::ContainerManager::ContainerManager()
       if (!data_path_.empty())
         SystemConfiguration::instance().set_data_path(data_path_);
 
-      if (!data_path_.empty() && !fs::exists(data_path_))
-        fs::create_directories(data_path_);
-
       if (!setup_mounts())
         return EXIT_FAILURE;
 
@@ -126,69 +122,34 @@ bool anbox::cmds::ContainerManager::setup_mounts() {
   if (!fs::exists(android_overlay_dir))
     fs::create_directory(android_overlay_dir);
 
-  // We prefer using the kernel for mounting the squashfs image but
-  // for some cases (unprivileged containers) where no loop support
-  // is available we do the mount instead via squashfuse which will
-  // work entirely in userspace.
-  if (fs::exists("/dev/loop-control")) {
-    std::shared_ptr<common::LoopDevice> loop_device;
+  std::shared_ptr<common::LoopDevice> loop_device;
 
-    try {
-      loop_device = common::LoopDeviceAllocator::new_device();
-    } catch (const std::exception& e) {
-      ERROR("Could not create loopback device: %s", e.what());
-      return false;
-    } catch (...) {
-      ERROR("Could not create loopback device");
-      return false;
-    }
-
-    if (!loop_device->attach_file(android_img_path)) {
-      ERROR("Failed to attach Android rootfs image to loopback device");
-      return false;
-    }
-
-    auto m = common::MountEntry::create(loop_device, android_rootfs_dir, "squashfs", MS_MGC_VAL | MS_RDONLY | MS_PRIVATE);
-    if (!m) {
-      ERROR("Failed to mount Android rootfs");
-      return false;
-    }
-    mounts_.push_back(m);
-  } else if (fs::exists("/dev/fuse") && !utils::find_program_on_path("squashfuse").empty()) {
-    std::vector<std::string> args = {
-      "-t", "fuse.squashfuse",
-      // Allow other users than root to access the rootfs
-      "-o", "allow_other",
-      android_img_path.string(),
-      android_rootfs_dir,
-    };
-
-    // Easiest is here to go with the standard mount program as that
-    // will handle everything for us which is relevant to get the
-    // squashfs via squashfuse properly mount without having to
-    // reimplement all the details. Once the mount call comes back
-    // without an error we can expect the image to be mounted.
-    auto child = core::posix::exec("/bin/mount", args, {}, core::posix::StandardStream::empty, []() {});
-    const auto result = child.wait_for(core::posix::wait::Flags::untraced);
-    if (result.status != core::posix::wait::Result::Status::exited ||
-        result.detail.if_exited.status != core::posix::exit::Status::success) {
-      ERROR("Failed to mount squashfs Android image");
-      return false;
-    }
-
-    auto m = common::MountEntry::create(android_rootfs_dir);
-    if (!m) {
-      ERROR("Failed to create mount entry for Android rootfs");
-      return false;
-    }
-    mounts_.push_back(m);
-  } else {
-    ERROR("No loop device or FUSE support found. Can't setup Android rootfs!");
+  try {
+    loop_device = common::LoopDeviceAllocator::new_device();
+  } catch (const std::exception& e) {
+    ERROR("Could not create loopback device: %s", e.what());
+    return false;
+  } catch (...) {
+    ERROR("Could not create loopback device");
     return false;
   }
 
-  std::string options = "lowerdir=" + android_rootfs_dir + ",upperdir=" + SystemConfiguration::instance().overlay_dir();
-  auto o = common::MountEntry::create("overlayfs", android_rootfs_dir, "overlayfs", MS_MGC_VAL | MS_RDONLY | MS_PRIVATE, options);
+  if (!loop_device->attach_file(android_img_path)) {
+    ERROR("Failed to attach Android rootfs image to loopback device");
+    return false;
+  }
+
+  auto m = common::MountEntry::create(loop_device, android_rootfs_dir, "squashfs", MS_MGC_VAL | MS_RDONLY | MS_PRIVATE);
+  if (!m) {
+    ERROR("Failed to mount Android rootfs");
+    return false;
+  }
+  mounts_.push_back(m);
+
+  //std::string options = "lowerdir=" + android_rootfs_dir + ",upperdir=" + SystemConfiguration::instance().overlay_dir();
+  std::string options = "lowerdir=" + android_rootfs_dir + ",upperdir=" + SystemConfiguration::instance().overlay_dir() + ",workdir=" + android_rootfs_dir + "/../work";
+  //auto o = common::MountEntry::create("overlayfs", android_rootfs_dir, "overlayfs", MS_MGC_VAL | MS_RDONLY | MS_PRIVATE, options);
+  auto o = common::MountEntry::create("overlay", android_rootfs_dir, "overlay", MS_MGC_VAL | MS_RDONLY | MS_PRIVATE, options);
   if(!o) {
     ERROR("Failed to mount Android overlay");
     return false;
