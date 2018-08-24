@@ -42,7 +42,7 @@ _iptables() {
     if [ "${use_iptables_lock}" == "" ]; then
         iptables "$@"
     else
-        iptables "{use_iptables_lock}" "$@"
+        iptables "${use_iptables_lock}" "$@"
     fi
 }
 
@@ -50,7 +50,7 @@ _ip6tables() {
     if [ "${use_iptables_lock}" == "" ]; then
         ip6tables "$@"
     else
-        ip6tables "{use_iptables_lock}" "$@"
+        ip6tables "${use_iptables_lock}" "$@"
     fi
 }
 
