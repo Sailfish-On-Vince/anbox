@@ -130,7 +130,10 @@ ln -s /odm/lib/egl/* vendor/lib/egl/
 fi
 ln -s /vendor/lib/egl/libGLESv2_adreno.so system/lib/egl/libGLESv2_emulation.so
 ln -s /vendor/lib/egl/libGLESv1_CM_adreno.so system/lib/egl/libGLESv1_CM_emulation.so
-ln -s /vendor/lib/egl/libEGL_adreno.so system/lib/egl/libEGL_emulation.so
+# softlink do not work, why?
+#ln -s /vendor/lib/egl/libEGL_adreno.so system/lib/egl/libEGL_emulation.so
+cp /vendor/lib/egl/libEGL_adreno.so system/lib/egl/libEGL_emulation.so
+cp /vendor/lib/egl/libEGL_adreno.so system/lib/egl/libGLES_emulation.so
 
 echo "Setting up extra bind mounts"
 mkdir -p /var/lib/anbox/containers/default/
