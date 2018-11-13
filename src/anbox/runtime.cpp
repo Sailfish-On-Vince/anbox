@@ -29,7 +29,7 @@ namespace {
 // errors. We should enable calling code to decide whether an exception should
 // be considered
 // fatal or not.
-void exception_safe_run(boost::asio::io_service& service) {
+void exception_safe_run(boost::asio::io_context& service) {
   while (true) {
     try {
       service.run();
@@ -40,7 +40,7 @@ void exception_safe_run(boost::asio::io_service& service) {
     } catch (const std::exception& e) {
       ERROR("%s", e.what());
     } catch (...) {
-      ERROR("Unknown exception caught while executing boost::asio::io_service");
+      ERROR("Unknown exception caught while executing boost::asio::io_context");
     }
   }
 }
@@ -91,6 +91,6 @@ std::function<void(std::function<void()>)> Runtime::to_dispatcher_functional() {
   return [sp](std::function<void()> task) { sp->strand_.post(task); };
 }
 
-boost::asio::io_service& Runtime::service() { return service_; }
+boost::asio::io_context& Runtime::service() { return service_; }
 
 }  // namespace anbox

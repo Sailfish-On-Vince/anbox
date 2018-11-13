@@ -29,7 +29,7 @@ struct AsioStrandDispatcher : public anbox::common::Dispatcher {
 
  private:
   std::shared_ptr<anbox::Runtime> rt;
-  boost::asio::io_service::strand strand;
+  boost::asio::io_context::strand strand;
 };
 }
 
