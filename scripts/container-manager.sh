@@ -35,7 +35,18 @@ start() {
 		AA_EXEC=""
 	fi
 
+	if [ -e "$SNAP_COMMON"/.enable_debug ]; then
+		export ANBOX_LOG_LEVEL=debug
+	fi
+	
+	EXTRA_ARGS=
+	enable_rootfs_overlay="$(snapctl get rootfs-overlay.enable)"
+	if [ "$enable_rootfs_overlay" = true ]; then
+		EXTRA_ARGS="$EXTRA_ARGS --use-rootfs-overlay"
+	fi
+
 	exec $AA_EXEC $SNAP/bin/anbox-wrapper.sh container-manager \
+		"$EXTRA_ARGS" \
 		--data-path=$DATA_PATH \
 		--android-image=$ANDROID_IMG \
 		--daemon

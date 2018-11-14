@@ -102,7 +102,11 @@ set(SOURCES
     anbox/build/config.h.in
 
     anbox/android/intent.cpp
+    anbox/android/ip_config_builder.cpp
+    anbox/android/ip_config_builder.h
 
+    anbox/common/binary_writer.cpp
+    anbox/common/binary_writer.h
     anbox/common/fd.cpp
     anbox/common/fd_sets.h
     anbox/common/variable_length_array.h

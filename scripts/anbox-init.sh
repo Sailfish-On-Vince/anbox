@@ -13,12 +13,14 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+set -x
+
 function prepare_filesystem() {
 	# These dev files need to be adjusted everytime as they are
 	# bind mounted into the temporary rootfs
 	chmod 0777 /dev/input
 	for f in qemu_pipe qemu_trace goldfish_pipe input/* /run/display/* ; do
-		if [ ! -e /dev/$f ] ; then
+		if [ ! -e "/dev/$f" ] ; then
 			continue
 		fi
 		chown system:system /dev/$f

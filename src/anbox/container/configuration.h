@@ -23,8 +23,12 @@
 
 namespace anbox {
 namespace container {
+struct DeviceSpecification {
+    uint32_t permission;
+};
 struct Configuration {
   std::map<std::string, std::string> bind_mounts;
+  std::map<std::string, DeviceSpecification> devices;
 };
 }  // namespace container
 }  // namespace anbox
