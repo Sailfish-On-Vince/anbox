@@ -19,7 +19,7 @@ function prepare_filesystem() {
 	# These dev files need to be adjusted everytime as they are
 	# bind mounted into the temporary rootfs
 	chmod 0777 /dev/input
-	for f in qemu_pipe qemu_trace goldfish_pipe input/* /run/display/* ; do
+	for f in qemu_pipe qemu_trace goldfish_pipe /run/display/* ; do
 		if [ ! -e "/dev/$f" ] ; then
 			continue
 		fi
