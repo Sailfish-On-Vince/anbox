@@ -136,14 +136,14 @@ void LxcContainer::setup_id_map() {
 }
 
 void LxcContainer::setup_network() {
-  if (!fs::exists("/sys/class/net/anbox0")) {
-    WARNING("Anbox bridge interface 'anbox0' doesn't exist. Network functionality will not be available");
+  if (!fs::exists("/sys/class/net/anboxbr0")) {
+    WARNING("Anbox bridge interface 'anboxbr0' doesn't exist. Network functionality will not be available");
     return;
   }
 
   set_config_item(lxc_config_net_type_key, "veth");
   set_config_item(lxc_config_net_flags_key, "up");
-  set_config_item(lxc_config_net_link_key, "anbox0");
+  set_config_item(lxc_config_net_link_key, "anboxbr0");
 
   // Instead of relying on DHCP we will give Android a static IP configuration
   // for the virtual ethernet interface LXC creates for us. This will be bridged

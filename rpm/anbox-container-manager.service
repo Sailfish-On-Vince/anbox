@@ -3,7 +3,7 @@ Description=Anbox Container Manager
 
 [Service]
 ExecStartPre=/usr/bin/anbox-bridge.sh start
-ExecStart=/usr/bin/anbox container-manager --privileged
+ExecStart=/usr/bin/anbox container-manager --privileged --data-path=/var/lib/anbox/
 ExecStopPost=/usr/bin/anbox-bridge.sh stop
 
 [Install]
