@@ -274,7 +274,7 @@ anbox::cmds::SessionManager::SessionManager()
         {"/dev/binder"},
         {"/dev/ashmem"},
         {"/dev/fuse"},
-      }
+      };
 
       dispatcher->dispatch([&]() { container_->start(container_configuration); });
     }
