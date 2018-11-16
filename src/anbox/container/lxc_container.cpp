@@ -42,9 +42,9 @@ namespace fs = boost::filesystem;
 namespace {
 constexpr unsigned int unprivileged_uid{100000};
 constexpr unsigned int android_system_uid{1000};
-constexpr const char *default_container_ip_address{"192.168.250.2"};
+constexpr const char *default_container_ip_address{"10.0.6.2"};
 constexpr const std::uint32_t default_container_ip_prefix_length{24};
-constexpr const char *default_host_ip_address{"192.168.250.1"};
+constexpr const char *default_host_ip_address{"10.0.6.1"};
 constexpr const char *default_dns_server{"8.8.8.8"};
 
 #ifdef ENABLE_LXC2_SUPPORT
