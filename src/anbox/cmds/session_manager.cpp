@@ -269,9 +269,11 @@ anbox::cmds::SessionManager::SessionManager()
         {bridge_connector->socket_file(), "/dev/anbox_bridge"},
         {audio_server->socket_file(), "/dev/anbox_audio"},
         {SystemConfiguration::instance().input_device_dir(), "/dev/input"},
-        {"/dev/binder", "/dev/binder"},
-        {"/dev/ashmem", "/dev/ashmem"},
-        {"/dev/fuse", "/dev/fuse"},
+      };
+      container_configuration.devices = {
+        {"/dev/binder", {0666}},
+        {"/dev/ashmem", {0666}},
+        {"/dev/fuse", {0666}},
       };
 
       dispatcher->dispatch([&]() { container_->start(container_configuration); });
