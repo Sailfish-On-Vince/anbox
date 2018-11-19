@@ -68,9 +68,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.kernel.qemu=1
 	ro.adb.qemud=1
 
-# Disable any software key elements in the UI
+# Enable any software key elements in the UI
 PRODUCT_PROPERTY_OVERRIDES += \
-	qemu.hw.mainkeys=1
+	qemu.hw.mainkeys=0
 
 # Let everything know we're running inside a container
 PRODUCT_PROPERTY_OVERRIDES += \
