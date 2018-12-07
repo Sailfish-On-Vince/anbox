@@ -214,7 +214,7 @@ bool anbox::cmds::ContainerManager::setup_mounts() {
 
 
   for (const auto &dir_name : std::vector<std::string>{"cache", "data"}) {
-    auto target_dir_path = fs::path(final_android_rootfs_dir) / dir_name;
+    auto target_dir_path = fs::path(android_rootfs_dir) / dir_name;
     auto src_dir_path = SystemConfiguration::instance().data_dir() / dir_name;
 
     if (!fs::exists(src_dir_path)) {

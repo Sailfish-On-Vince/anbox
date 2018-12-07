@@ -282,11 +282,13 @@ anbox::cmds::SessionManager::SessionManager()
     auto bus_type = core::dbus::WellKnownBus::session;
     if (use_system_dbus_)
         bus_type = core::dbus::WellKnownBus::system;
-
     auto bus = std::make_shared<core::dbus::Bus>(bus_type);
+
     bus->install_executor(core::dbus::asio::make_executor(bus, rt->service()));
 
     auto skeleton = anbox::dbus::skeleton::Service::create_for_bus(bus, app_manager);
+
+    bus->run_async();
 
     rt->start();
     trap->run();
