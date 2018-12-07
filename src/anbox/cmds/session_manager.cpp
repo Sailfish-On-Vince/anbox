@@ -288,8 +288,6 @@ anbox::cmds::SessionManager::SessionManager()
 
     auto skeleton = anbox::dbus::skeleton::Service::create_for_bus(bus, app_manager);
 
-    bus->run_async();
-
     rt->start();
     trap->run();
 
