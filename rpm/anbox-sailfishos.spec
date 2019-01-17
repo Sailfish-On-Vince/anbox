@@ -68,18 +68,20 @@ install -Dm 644 %{_sourcedir}/anbox.desktop %{buildroot}/%{_datadir}/application
 install -Dm 644 snap/gui/icon.png %{buildroot}/%{_datadir}/icons/hicolor/512x512/apps/anbox.png
 
 %post
-#if [ "$1" -ge 1 ]; then
-#    systemctl-user daemon-reload || true
-#    systemctl-user restart anbox-session-manager.service || true
-#fi
+if [ "$1" -ge 1 ]; then
+   systemctl-user daemon-reload || true
+   systemctl daemon-reload || true
+  # systemctl-user restart anbox-session-manager.service || true
+fi
 prepare-anbox
 
 %postun
-#if [ "$1" -eq 0 ]; then
-#    systemctl-user stop anbox-session-manager.service || true
-#    systemctl-user daemon-reload || true
-#fi
-#TODO: Add cleanup-anbox script too, to cleanup after anbox
+if [ "$1" -eq 0 ]; then
+   systemctl-user stop anbox-session-manager.service || true
+   systemctl stop anbox-container-manager.service || true
+   systemctl-user daemon-reload || true
+   systemctl daemon-reload || true
+fi
 
 %files
 %defattr(-,root,root,-)
