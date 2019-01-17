@@ -61,24 +61,24 @@ void LxcContainer::setup_id_maps() {
   const auto base_id = unprivileged_user_id;
   const auto max_id = 65536;
 
-  set_config_item("lxc.id_map",
+  set_config_item("lxc.idmap",
                   utils::string_format("u 0 %d %d", base_id, creds_.uid() - 1));
-  set_config_item("lxc.id_map",
+  set_config_item("lxc.idmap",
                   utils::string_format("g 0 %d %d", base_id, creds_.gid() - 1));
 
   // We need to bind the user id for the one running the client side
   // process as he is the owner of various socket files we bind mount
   // into the container.
-  set_config_item("lxc.id_map",
+  set_config_item("lxc.idmap",
                   utils::string_format("u %d %d 1", creds_.uid(), creds_.uid()));
-  set_config_item("lxc.id_map",
+  set_config_item("lxc.idmap",
                   utils::string_format("g %d %d 1", creds_.gid(), creds_.gid()));
 
-  set_config_item("lxc.id_map",
+  set_config_item("lxc.idmap",
                   utils::string_format("u %d %d %d", creds_.uid() + 1,
                                        base_id + creds_.uid() + 1,
                                        max_id - creds_.uid() - 1));
-  set_config_item("lxc.id_map",
+  set_config_item("lxc.idmap",
                   utils::string_format("g %d %d %d", creds_.uid() + 1,
                                        base_id + creds_.gid() + 1,
                                        max_id - creds_.gid() - 1));
@@ -115,9 +115,9 @@ void LxcContainer::start(const Configuration &configuration) {
   set_config_item("lxc.mount.auto", "proc:mixed sys:mixed cgroup:mixed");
 
   set_config_item("lxc.autodev", "1");
-  set_config_item("lxc.pts", "1024");
-  set_config_item("lxc.tty", "0");
-  set_config_item("lxc.utsname", "anbox");
+  set_config_item("lxc.pty.max", "1024");
+  set_config_item("lxc.tty.max", "0");
+  set_config_item("lxc.uts.name", "anbox");
 
   set_config_item("lxc.group.devices.deny", "");
   set_config_item("lxc.group.devices.allow", "");
@@ -125,38 +125,38 @@ void LxcContainer::start(const Configuration &configuration) {
   set_config_item("lxc.cgroup.devices.allow", "c 13:* rwm");
 
   // We can't move bind-mounts, so don't use /dev/lxc/
-  set_config_item("lxc.devttydir", "");
+  set_config_item("lxc.tty.dir", "");
 
   set_config_item("lxc.environment",
                   "PATH=/system/bin:/system/sbin:/system/xbin");
 
-  set_config_item("lxc.init_cmd", "/anbox-init.sh");
-  set_config_item("lxc.rootfs.backend", "dir");
+  set_config_item("lxc.init.cmd", "/anbox-init.sh");
 
   const auto rootfs_path = SystemConfiguration::instance().rootfs_dir();
   DEBUG("Using rootfs path %s", rootfs_path);
-  set_config_item("lxc.rootfs", rootfs_path);
+  set_config_item("lxc.rootfs.path", rootfs_path);
 
-  set_config_item("lxc.loglevel", "0");
+  set_config_item("lxc.log.level", "0");
   const auto log_path = SystemConfiguration::instance().log_dir();
-  set_config_item("lxc.logfile", utils::string_format("%s/container.log", log_path).c_str());
+  set_config_item("lxc.log.file", utils::string_format("%s/container.log", log_path).c_str());
+  set_config_item("lxc.console.logfile", utils::string_format("%s/console.log", log_path).c_str());
+  set_config_item("lxc.console.rotate", "1");
 
   if (fs::exists("/sys/class/net/anboxbr0")) {
-    set_config_item("lxc.network.type", "veth");
-    set_config_item("lxc.network.flags", "up");
-    set_config_item("lxc.network.link", "anboxbr0");
+    set_config_item("lxc.net.0.type", "veth");
+    set_config_item("lxc.net.0.flags", "up");
+    set_config_item("lxc.net.0.link", "anboxbr0");
   }
 
 #if 0
     // Android uses namespaces as well so we have to allow nested namespaces for LXC
     // which are otherwise forbidden by AppArmor.
-    set_config_item("lxc.aa_profile", "lxc-container-default-with-nesting");
+    set_config_item("lxc.apparmor.profile", "anbox-container");
+
+    const auto seccomp_profile_path = fs::path(utils::get_env_value("SNAP", "/etc/anbox")) / "seccomp" / "anbox.sc";
+    set_config_item("lxc.seccomp.profile", seccomp_profile_path.string().c_str());
 #else
-  // FIXME: when using the nested profile we still get various denials from
-  // things Android tries to do but isn't allowed to. We need to look into
-  // those and see how we can switch back to a confined way of running the
-  // container.
-  set_config_item("lxc.aa_profile", "unconfined");
+  set_config_item("lxc.apparmor.profile", "unconfined");
 #endif
 
   if (!privileged_)
