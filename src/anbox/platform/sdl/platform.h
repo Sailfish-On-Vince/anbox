@@ -87,6 +87,7 @@ class Platform : public std::enable_shared_from_this<Platform>,
   bool event_thread_running_;
   std::shared_ptr<input::Device> pointer_;
   std::shared_ptr<input::Device> keyboard_;
+  std::shared_ptr<input::Device> touch_;
   bool window_size_immutable_ = false;
   bool single_window_ = false;
 };

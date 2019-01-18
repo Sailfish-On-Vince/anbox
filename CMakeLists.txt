@@ -90,6 +90,12 @@ else(USE_HEADLESS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWAYLAND_SUPPORT")
   endif()
 endif(USE_HEADLESS)
+
+option(ENABLE_TOUCH_INPUT "Enable touch input support" OFF)
+if (ENABLE_TOUCH_INPUT)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_TOUCH_INPUT")
+endif()
+
 #####################################################################
 # Enable code coverage calculation with gcov/gcovr/lcov
 # Usage:
