@@ -36,6 +36,7 @@ Requires:  boost-log
 Requires:  lxc
 Requires:  protobuf
 Requires:  libprocess-cpp2
+Requires:  dnsmasq
 
 %define debug_package %{nil}
 

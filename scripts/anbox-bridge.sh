@@ -157,8 +157,8 @@ start() {
 
     _iptables -I INPUT -i "${BRIDGE}" -p udp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
     _iptables -I INPUT -i "${BRIDGE}" -p tcp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-    _iptables -I INPUT -i "${BRIDGE}" -p udp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-    _iptables -I INPUT -i "${BRIDGE}" -p tcp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+    _iptables -I INPUT -i "${BRIDGE}" -p udp --dport 5353 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+    _iptables -I INPUT -i "${BRIDGE}" -p tcp --dport 5353 -j ACCEPT -m comment --comment "managed by anbox-bridge"
     _iptables -I FORWARD -i "${BRIDGE}" -j ACCEPT -m comment --comment "managed by anbox-bridge"
     _iptables -I FORWARD -o "${BRIDGE}" -j ACCEPT -m comment --comment "managed by anbox-bridge"
     _iptables -t mangle -A POSTROUTING -o "${BRIDGE}" -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill -m comment --comment "managed by anbox-bridge"
@@ -203,8 +203,8 @@ stop() {
         ifdown ${BRIDGE}
         _iptables -D INPUT -i ${BRIDGE} -p udp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
         _iptables -D INPUT -i ${BRIDGE} -p tcp --dport 67 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-        _iptables -D INPUT -i ${BRIDGE} -p udp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
-        _iptables -D INPUT -i ${BRIDGE} -p tcp --dport 53 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+        _iptables -D INPUT -i ${BRIDGE} -p udp --dport 5353 -j ACCEPT -m comment --comment "managed by anbox-bridge"
+        _iptables -D INPUT -i ${BRIDGE} -p tcp --dport 5353 -j ACCEPT -m comment --comment "managed by anbox-bridge"
         _iptables -D FORWARD -i ${BRIDGE} -j ACCEPT -m comment --comment "managed by anbox-bridge"
         _iptables -D FORWARD -o ${BRIDGE} -j ACCEPT -m comment --comment "managed by anbox-bridge"
         _iptables -t mangle -D POSTROUTING -o ${BRIDGE} -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill -m comment --comment "managed by anbox-bridge"
