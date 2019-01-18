@@ -70,7 +70,10 @@ for f in $DEPS; do
         continue
     fi
     # don't put find /vendor/ /system/. because we need to prefer the /vendor location
-    FULL_NAME=$(find /odm/lib/ | grep $(basename $f))
+    FULL_NAME=
+    if [ -d "/odm/lib" ]; then
+        FULL_NAME=$(find /odm/lib/ | grep $(basename $f))
+    fi
     if [ "$FULL_NAME" == "" ]; then
         FULL_NAME=$(find /vendor/lib/ | grep $(basename $f))
     fi
@@ -93,7 +96,10 @@ for f in $DEPS; do
         continue
     fi
     # don't put find /vendor/ /system/. because we need to prefer the /vendor location
-    FULL_NAME=$(find /odm/lib64/ | grep $(basename $f))
+    FULL_NAME=
+    if [ -d "/odm/lib64" ]; then
+        FULL_NAME=$(find /odm/lib64/ | grep $(basename $f))
+    fi
     if [ "$FULL_NAME" == "" ]; then
         FULL_NAME=$(find /vendor/lib64/ | grep $(basename $f))
     fi
@@ -112,8 +118,8 @@ done
 mkdir -p $OVERLAY_DIR/vendor/lib/egl
 mkdir -p $OVERLAY_DIR/system/lib/egl
 mkdir -p $OVERLAY_DIR/system/lib/hw
-cp /system/lib/egl/egl.cfg $OVERLAY_DIR/system/lib/egl/egl.cfg
-cp /system/lib64/egl/egl.cfg $OVERLAY_DIR/system/lib64/egl/egl.cfg
+cp /system/lib/egl/egl.cfg $OVERLAY_DIR/system/lib/egl/egl.cfg || true
+cp /system/lib64/egl/egl.cfg $OVERLAY_DIR/system/lib64/egl/egl.cfg || true
 if [ -f "/system/lib/hw/gralloc.$(getprop ro.product.device).so" ];
 then
   cp /system/lib/hw/gralloc.$(getprop ro.product.device).so $OVERLAY_DIR/system/lib/hw/gralloc.default.so
@@ -125,8 +131,8 @@ fi
 
 cd $OVERLAY_DIR
 if [ -d "odm/lib/" ]; then
-ln -s /odm/lib/* vendor/lib/
-ln -s /odm/lib/egl/* vendor/lib/egl/
+    ln -s /odm/lib/* vendor/lib/
+    ln -s /odm/lib/egl/* vendor/lib/egl/
 fi
 ln -s /vendor/lib/egl/libGLESv2_adreno.so system/lib/egl/libGLESv2_emulation.so
 ln -s /vendor/lib/egl/libGLESv1_CM_adreno.so system/lib/egl/libGLESv1_CM_emulation.so
