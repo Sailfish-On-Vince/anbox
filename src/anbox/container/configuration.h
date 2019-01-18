@@ -20,11 +20,13 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 namespace anbox {
 namespace container {
 struct Configuration {
   std::map<std::string, std::string> bind_mounts;
+  std::vector<std::string> extra_properties;
 };
 }  // namespace container
 }  // namespace anbox

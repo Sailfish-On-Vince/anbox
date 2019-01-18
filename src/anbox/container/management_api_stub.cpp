@@ -42,6 +42,9 @@ void ManagementApiStub::start_container(const Configuration &configuration) {
     bind_mount_message->set_target(item.second);
   }
 
+  for (const auto &prop : configuration.extra_properties)
+    message_configuration->add_extra_properties(prop);
+
   message.set_allocated_configuration(message_configuration);
 
   {

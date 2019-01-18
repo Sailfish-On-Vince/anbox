@@ -261,6 +261,18 @@ anbox::cmds::SessionManager::SessionManager()
             }));
 
     container::Configuration container_configuration;
+
+    // Instruct healthd to fake battery level as it may take it from other connected
+    // devices like mouse or keyboard and will incorrectly show a system popup to
+    // shutdown the Android system because of low battery. This prevents any kind of
+    // input as focus is bound to the system popup exclusively.
+    //
+    // See https://github.com/anbox/anbox/issues/780 for further details.
+    container_configuration.extra_properties.push_back("ro.boot.fake_battery=1");
+
+    // enable software key as no back button in sfos
+    container_configuration.extra_properties.push_back("qemu.hw.mainkeys=0");
+
     if (!standalone_) {
       container_configuration.bind_mounts = {
 #ifndef USE_HEADLESS

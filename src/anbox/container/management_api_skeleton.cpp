@@ -52,6 +52,11 @@ void ManagementApiSkeleton::start_container(
         {bind_mount.source(), bind_mount.target()});
   }
 
+  for (int n = 0; n < configuration.extra_properties_size(); n++) {
+    const auto prop = configuration.extra_properties(n);
+    container_configuration.extra_properties.push_back(prop);
+  }
+
   try {
     container_->start(container_configuration);
   } catch (std::exception &err) {
