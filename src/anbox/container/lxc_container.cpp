@@ -23,6 +23,7 @@
 #include <map>
 #include <stdexcept>
 #include <fstream>
+#include <sstream>
 
 #include <boost/filesystem.hpp>
 #include <boost/throw_exception.hpp>

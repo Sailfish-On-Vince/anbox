@@ -6,6 +6,7 @@ OVERLAY_DIR=$ANBOX_DATA/overlay
 ROOTFS=$ANBOX_DATA/rootfs
 ROOTFS_FILE=$ANBOX_DATA/android.img
 WORKDIR=$ANBOX_DATA/work
+STATEDIR=$ANBOX_DATA/state
 
 EXTRA_BIND_MOUNTS=/var/lib/anbox/containers/default/extra_bind_mounts
 
@@ -48,6 +49,7 @@ echo "Ignoring files which are already in rootfs"
 mkdir -p $ROOTFS
 mount $ROOTFS_FILE $ROOTFS
 
+mkdir -p $STATEDIR
 mkdir -p $WORKDIR
 
 NEW_DEPS=
