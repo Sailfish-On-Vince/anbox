@@ -54,7 +54,7 @@ Platform::Platform(
   // Available since SDL 2.0.8
   SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
 #endif       
- 
+
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS) < 0) {
     const auto message = utils::string_format("Failed to initialize SDL: %s", SDL_GetError());
     BOOST_THROW_EXCEPTION(std::runtime_error(message));
@@ -246,6 +246,7 @@ void Platform::process_input_event(const SDL_Event &event) {
     case SDL_MOUSEWHEEL:
       mouse_events.push_back(
           {EV_REL, REL_WHEEL, static_cast<std::int32_t>(event.wheel.y)});
+      mouse_events.push_back({EV_SYN, SYN_REPORT, 0}); 
       break;
     case SDL_KEYDOWN: {
       const auto code = KeycodeConverter::convert(event.key.keysym.scancode);
