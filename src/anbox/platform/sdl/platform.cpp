@@ -42,6 +42,19 @@ Platform::Platform(
     : input_manager_(input_manager),
       event_thread_running_(false),
       single_window_(single_window) {
+
+  // Don't block the screensaver from kicking in. It will be blocked
+  // by the desktop shell already and we don't have to do this again.
+  // If we would leave this enabled it will prevent systems from
+  // suspending correctly.
+  SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
+
+#ifdef SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR
+  // Don't disable compositing
+  // Available since SDL 2.0.8
+  SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
+#endif       
+ 
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS) < 0) {
     const auto message = utils::string_format("Failed to initialize SDL: %s", SDL_GetError());
     BOOST_THROW_EXCEPTION(std::runtime_error(message));
@@ -71,7 +84,7 @@ Platform::Platform(
 
   graphics::emugl::DisplayInfo::get()->set_resolution(display_frame.width(), display_frame.height());
   display_frame_ = display_frame;
-  
+
   pointer_ = input_manager->create_device();
   pointer_->set_name("anbox-pointer");
   pointer_->set_driver_version(1);
