@@ -70,7 +70,8 @@ Platform::Platform(
   }
 
   graphics::emugl::DisplayInfo::get()->set_resolution(display_frame.width(), display_frame.height());
-
+  display_frame_ = display_frame;
+  
   pointer_ = input_manager->create_device();
   pointer_->set_name("anbox-pointer");
   pointer_->set_driver_version(1);
@@ -154,12 +155,18 @@ void Platform::process_events() {
             }
           }
           break;
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+          if (keyboard_)
+            process_input_event(event);
+          break;
         case SDL_MOUSEMOTION:
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP:
         case SDL_MOUSEWHEEL:
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
+        case SDL_FINGERDOWN:
+        case SDL_FINGERUP:
+        case SDL_FINGERMOTION:
           process_input_event(event);
           break;
         default:
