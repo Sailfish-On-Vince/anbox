@@ -1,10 +1,10 @@
-Name:       anbox-sailfishos
+Name:       anbox-sailfishos-dev
 Summary:    Run Android inside a container
-Version:    1
-Release:    1
+Version:    1.0
+Release:    1%{?dist}
 Group:      System/Applications
 License:    LGPL 2.1
-URL:        https://github.com/anbox/anbox
+URL:        https://github.com/Sailfish-On-Vince/anbox
 Source:     %{name}-%{version}.tar.gz
 
 BuildRequires:  cmake
