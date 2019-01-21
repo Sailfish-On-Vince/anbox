@@ -254,7 +254,7 @@ void LxcContainer::start(const Configuration &configuration) {
 
   setup_network();
 
-#if ENABLE_SNAP_CONFINEMENT
+#if 0
   // We take the AppArmor profile snapd has defined for us as part of the
   // anbox-support interface. The container manager itself runs within a
   // child profile snap.anbox.container-manager//lxc too.

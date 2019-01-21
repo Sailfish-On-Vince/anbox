@@ -22,7 +22,7 @@ if [ -n "$SNAP_DATA" ]; then
     varrun="$SNAP_DATA"/network
 fi
 
-BRIDGE="anbox0"
+BRIDGE="anboxbr0"
 
 # IPv4
 IPV4_ADDR="192.168.250.1"

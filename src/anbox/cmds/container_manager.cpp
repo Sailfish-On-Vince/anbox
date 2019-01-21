@@ -92,7 +92,7 @@ anbox::cmds::ContainerManager::ContainerManager()
       if (!data_path_.empty())
         SystemConfiguration::instance().set_data_path(data_path_);
 
-      if (!fs::exists(data_path_))
+      if (!data_path_.empty() && !fs::exists(data_path_))
         fs::create_directories(data_path_);
 
       if (!setup_mounts())
@@ -211,8 +211,12 @@ bool anbox::cmds::ContainerManager::setup_mounts() {
   std::string options = "lowerdir=" + android_rootfs_dir + ",upperdir=" + SystemConfiguration::instance().overlay_dir() + ",workdir=" + android_rootfs_dir + "/../work";
   auto o = common::MountEntry::create("overlay", android_rootfs_dir, "overlay", MS_MGC_VAL | MS_RDONLY | MS_PRIVATE, options);
   if(!o) {
-    ERROR("Failed to mount Android overlay");
-    return false;
+    o = common::MountEntry::create("overlayfs", android_rootfs_dir, "overlayfs", MS_MGC_VAL | MS_RDONLY | MS_PRIVATE, options);
+    if(!o) {
+      ERROR("Failed to mount Android overlay");
+      mounts_.clear();
+      return false;
+    }
   }
   mounts_.push_back(o);
 
