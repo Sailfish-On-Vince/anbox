@@ -52,6 +52,18 @@ anbox::cmds::ContainerManager::ContainerManager()
   flag(cli::make_flag(cli::Name{"daemon"},
                       cli::Description{"Mark service as being started as systemd daemon"},
                       daemon_));
+  flag(cli::make_flag(cli::Name{"use-rootfs-overlay"},
+                      cli::Description{"Use an overlay for the Android rootfs"},
+                      enable_rootfs_overlay_));
+  flag(cli::make_flag(cli::Name{"container-network-address"},
+                      cli::Description{"Assign the specified network address to the Android container"},
+                      container_network_address_));
+  flag(cli::make_flag(cli::Name{"container-network-gateway"},
+                      cli::Description{"Assign the specified network gateway to the Android container"},
+                      container_network_gateway_));
+  flag(cli::make_flag(cli::Name{"container-network-dns-servers"},
+                      cli::Description{"Assign the specified DNS servers to the Android container"},
+                      container_network_dns_servers_));                      
 
   action([&](const cli::Command::Context&) {
     try {
@@ -80,14 +92,23 @@ anbox::cmds::ContainerManager::ContainerManager()
       if (!data_path_.empty())
         SystemConfiguration::instance().set_data_path(data_path_);
 
-      if (!data_path_.empty() && !fs::exists(data_path_))
+      if (!fs::exists(data_path_))
         fs::create_directories(data_path_);
 
       if (!setup_mounts())
         return EXIT_FAILURE;
 
       auto rt = Runtime::create();
-      auto service = container::Service::create(rt, privileged_);
+      container::Service::Configuration config;
+      config.privileged = privileged_;
+      config.rootfs_overlay = enable_rootfs_overlay_;
+      config.container_network_address = container_network_address_;
+      config.container_network_gateway = container_network_gateway_;
+
+      if (container_network_dns_servers_.length() > 0)
+        config.container_network_dns_servers = utils::string_split(container_network_dns_servers_, ',');
+
+      auto service = container::Service::create(rt, config);
 
       rt->start();
       trap->run();

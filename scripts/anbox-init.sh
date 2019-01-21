@@ -18,7 +18,7 @@ function prepare_filesystem() {
 	# bind mounted into the temporary rootfs
 	chmod 0777 /dev/input
 	for f in qemu_pipe qemu_trace goldfish_pipe input/* /run/display/* ; do
-		if [ ! -e /dev/$f ] ; then
+		if [ ! -e "/dev/$f" ] ; then
 			continue
 		fi
 		chown system:system /dev/$f
@@ -30,9 +30,9 @@ prepare_filesystem &
 echo "Waiting for filesystem being prepared ..."
 wait $!
 
-ln -sf /dev/sockets/qemu_pipe /dev/qemu_pipe
-ln -sf /dev/sockets/qemud /dev/qemud
-ln -sf /dev/sockets/anbox_bridge /dev/anbox_bridge
+ln -sf /dev/socket/qemu_pipe /dev/qemu_pipe
+ln -sf /dev/socket/qemud /dev/qemud
+ln -sf /dev/socket/anbox_bridge /dev/anbox_bridge
 
 echo "Starting real init now ..."
 /init

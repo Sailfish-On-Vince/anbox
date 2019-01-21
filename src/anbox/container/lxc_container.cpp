@@ -15,6 +15,7 @@
  *
  */
 
+#include "anbox/android/ip_config_builder.h"
 #include "anbox/container/lxc_container.h"
 #include "anbox/system_configuration.h"
 #include "anbox/logger.h"
@@ -40,15 +41,41 @@
 namespace fs = boost::filesystem;
 
 namespace {
-constexpr unsigned int unprivileged_user_id{100000};
+constexpr unsigned int unprivileged_uid{100000};
+constexpr unsigned int android_system_uid{1000};
+constexpr const char *default_container_ip_address{"192.168.250.2"};
+constexpr const std::uint32_t default_container_ip_prefix_length{24};
+constexpr const char *default_host_ip_address{"192.168.250.1"};
+constexpr const char *default_dns_server{"8.8.8.8"};
+
+constexpr int device_major(__dev_t dev) {
+  return int(((dev >> 8) & 0xfff) | ((dev >> 32) & (0xfffff000)));
+}
+
+constexpr int device_minor(__dev_t dev) {
+  return int((dev & 0xff) | ((dev >> 12) & (0xffffff00)));
+}
 }
 
 namespace anbox {
 namespace container {
-LxcContainer::LxcContainer(bool privileged, const network::Credentials &creds)
-    : state_(State::inactive), container_(nullptr),  privileged_(privileged), creds_(creds) {
+LxcContainer::LxcContainer(bool privileged,
+                           bool rootfs_overlay,
+                           const std::string& container_network_address,
+                           const std::string &container_network_gateway,
+                           const std::vector<std::string> &container_network_dns_servers,
+                           const network::Credentials &creds)
+    : state_(State::inactive),
+      container_(nullptr),
+      privileged_(privileged),
+      rootfs_overlay_(rootfs_overlay),
+      container_network_address_(container_network_address),
+      container_network_gateway_(container_network_gateway),
+      container_network_dns_servers_(container_network_dns_servers),
+      creds_(creds) {
   utils::ensure_paths({
       SystemConfiguration::instance().container_config_dir(),
+      SystemConfiguration::instance().container_state_dir(),
       SystemConfiguration::instance().log_dir(),
   });
 }
@@ -59,7 +86,7 @@ LxcContainer::~LxcContainer() {
 }
 
 void LxcContainer::setup_id_maps() {
-  const auto base_id = unprivileged_user_id;
+  const auto base_id = unprivileged_uid;
   const auto max_id = 65536;
 
   set_config_item("lxc.idmap",
@@ -83,6 +110,88 @@ void LxcContainer::setup_id_maps() {
                   utils::string_format("g %d %d %d", creds_.uid() + 1,
                                        base_id + creds_.gid() + 1,
                                        max_id - creds_.gid() - 1));
+}
+
+void LxcContainer::setup_network() {
+  if (!fs::exists("/sys/class/net/anboxbr0")) {
+    WARNING("Anbox bridge interface 'anboxbr0' doesn't exist. Network functionality will not be available");
+    return;
+  }
+
+  set_config_item("lxc.net.0.type", "veth");
+  set_config_item("lxc.net.0.flags", "up");
+  set_config_item("lxc.net.0.link", "anboxbr0");
+
+  // Instead of relying on DHCP we will give Android a static IP configuration
+  // for the virtual ethernet interface LXC creates for us. This will be bridged
+  // to the host and will allows us to have reliable network connectivity and
+  // not depend on any other system service.
+
+  android::IpConfigBuilder ip_conf;
+  ip_conf.set_version(android::IpConfigBuilder::Version::Version2);
+  ip_conf.set_assignment(android::IpConfigBuilder::Assignment::Static);
+
+  std::string address = default_container_ip_address;
+  if (!container_network_address_.empty())
+    address = container_network_address_;
+  ip_conf.set_link_address(address, default_container_ip_prefix_length);
+
+  std::string gateway = default_host_ip_address;
+  if (!container_network_gateway_.empty())
+    gateway = container_network_gateway_;
+  ip_conf.set_gateway(default_host_ip_address);
+
+  if (container_network_dns_servers_.size() > 0)
+    ip_conf.set_dns_servers(container_network_dns_servers_);
+  else
+    ip_conf.set_dns_servers({default_dns_server});
+
+  ip_conf.set_id(0);
+
+  std::vector<std::uint8_t> buffer(512);
+  common::BinaryWriter writer(buffer.begin(), buffer.end());
+  const auto size = ip_conf.write(writer);
+
+  const auto data_ethernet_path = fs::path("data") / "misc" / "ethernet";
+  const auto ip_conf_dir = SystemConfiguration::instance().data_dir() / data_ethernet_path;
+  if (!fs::exists(ip_conf_dir))
+    fs::create_directories(ip_conf_dir);
+
+  // We have to walk through the created directory hierachy now and
+  // ensure the permissions are set correctly. Otherwise the Android
+  // system will fail to boot as it isn't allowed to write anything
+  // into these directories. As previous versions of Anbox which were
+  // published to our users did this incorrectly we need to check on
+  // every startup if those directories are still owned by root and
+  // if they are we move them over to the unprivileged user.
+  auto path = SystemConfiguration::instance().data_dir();
+  for (auto iter = data_ethernet_path.begin(); iter != data_ethernet_path.end(); iter++) {
+    path /= *iter;
+
+    struct stat st;
+    if (stat(path.c_str(), &st) < 0) {
+      WARNING("Cannot retrieve permissions of path %s", path);
+      continue;
+    }
+
+    if (st.st_uid != 0 && st.st_gid != 0)
+      continue;
+
+    if (::chown(path.c_str(), unprivileged_uid, unprivileged_uid) < 0)
+      WARNING("Failed to set owner for path '%s'", path);
+  }
+
+  const auto ip_conf_path = ip_conf_dir / "ipconfig.txt";
+  if (fs::exists(ip_conf_path))
+    fs::remove(ip_conf_path);
+
+  std::ofstream f(ip_conf_path.string(), std::ofstream::binary);
+  if (f.is_open()) {
+    f.write(reinterpret_cast<const char*>(buffer.data()), size);
+    f.close();
+  } else {
+    ERROR("Failed to write IP configuration. Network functionality will not be available.");
+  }
 }
 
 void LxcContainer::start(const Configuration &configuration) {
@@ -143,19 +252,13 @@ void LxcContainer::start(const Configuration &configuration) {
   set_config_item("lxc.console.logfile", utils::string_format("%s/console.log", log_path).c_str());
   set_config_item("lxc.console.rotate", "1");
 
-  if (fs::exists("/sys/class/net/anboxbr0")) {
-    set_config_item("lxc.net.0.type", "veth");
-    set_config_item("lxc.net.0.flags", "up");
-    set_config_item("lxc.net.0.link", "anboxbr0");
-  }
+  setup_network();
 
-#if 0
-    // Android uses namespaces as well so we have to allow nested namespaces for LXC
-    // which are otherwise forbidden by AppArmor.
-    set_config_item("lxc.apparmor.profile", "anbox-container");
-
-    const auto seccomp_profile_path = fs::path(utils::get_env_value("SNAP", "/etc/anbox")) / "seccomp" / "anbox.sc";
-    set_config_item("lxc.seccomp.profile", seccomp_profile_path.string().c_str());
+#if ENABLE_SNAP_CONFINEMENT
+  // We take the AppArmor profile snapd has defined for us as part of the
+  // anbox-support interface. The container manager itself runs within a
+  // child profile snap.anbox.container-manager//lxc too.
+  set_config_item("lxc.apparmor.profile", "snap.anbox.container-manager//container");
 #else
   set_config_item("lxc.apparmor.profile", "unconfined");
 #endif
