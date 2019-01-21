@@ -1,6 +1,6 @@
-Name:       anbox-sailfishos-dev
+Name:       anbox-sailfishos
 Summary:    Run Android inside a container
-Version:    1.0
+Version:    1.1
 Release:    1%{?dist}
 Group:      System/Applications
 License:    LGPL 2.1
