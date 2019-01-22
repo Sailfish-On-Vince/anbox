@@ -271,7 +271,7 @@ anbox::cmds::SessionManager::SessionManager()
     container_configuration.extra_properties.push_back("ro.boot.fake_battery=1");
 
     // enable software key as no back button in sfos
-    // container_configuration.extra_properties.push_back("qemu.hw.mainkeys=0");
+    container_configuration.extra_properties.push_back("qemu.hw.mainkeys=0");
 
     if (!standalone_) {
       container_configuration.bind_mounts = {
