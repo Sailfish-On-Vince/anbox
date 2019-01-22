@@ -62,6 +62,7 @@ popd
 install -Dm 755 scripts/prepare-anbox.sh %{buildroot}/%{_bindir}/prepare-anbox
 install -Dm 755 scripts/anbox-bridge.sh %{buildroot}/%{_bindir}/anbox-bridge.sh
 install -Dm 755 scripts/anbox.sh %{buildroot}/%{_bindir}/anbox.sh
+install -Dm 755 scripts/anbox-shell.sh %{buildroot}/%{_bindir}/anbox-shell.sh
 install -Dm 644 %{_sourcedir}/anbox-container-manager.service %{buildroot}/%{_unitdir}/anbox-container-manager.service
 install -Dm 644 %{_sourcedir}/anbox-session-manager.service %{buildroot}/%{_libdir}/systemd/user/anbox-session-manager.service
 install -Dm 644 %{_sourcedir}/anbox.desktop %{buildroot}/%{_datadir}/applications/anbox.desktop
@@ -90,6 +91,7 @@ fi
 %{_bindir}/anbox.sh
 %{_bindir}/prepare-anbox
 %{_bindir}/anbox-bridge.sh
+%{_bindir}/anbox-shell.sh
 
 %{_unitdir}/anbox-container-manager.service
 %{_libdir}/systemd/user/anbox-session-manager.service
