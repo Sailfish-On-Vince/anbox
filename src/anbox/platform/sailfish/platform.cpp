@@ -77,8 +77,8 @@ SailfishPlatform::ClipboardData SailfishPlatform::get_clipboard_data() {
   return ClipboardData{};
 }
 
-std::shared_ptr<audio::Sink> SailfishPlatform::create_audio_sink() {
-  return std::make_shared<sdl::AudioSink>();
+std::shared_ptr<audio::Sink> SailfishPlatform::create_audio_sink(const std::shared_ptr<network::LocalSocketMessenger> &messenger) {
+  return std::make_shared<AudioSink>(messenger);
 }
 
 std::shared_ptr<audio::Source> SailfishPlatform::create_audio_source() {
