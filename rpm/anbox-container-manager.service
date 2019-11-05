@@ -1,0 +1,10 @@
+[Unit]
+Description=Anbox Container Manager
+
+[Service]
+ExecStartPre=/usr/bin/anbox-bridge.sh start
+ExecStart=/usr/bin/anbox container-manager --privileged
+ExecStopPost=/usr/bin/anbox-bridge.sh stop
+
+[Install]
+WantedBy=multi-user.target
