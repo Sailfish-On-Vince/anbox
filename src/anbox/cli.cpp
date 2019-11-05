@@ -238,7 +238,7 @@ void cli::CommandWithFlagsAndAction::help(std::ostream& out) {
 cli::cmd::Help::Help(Command& cmd)
     : Command{cli::Name{"help"}, cli::Usage{"prints a short help message"},
               cli::Description{"prints a short help message"}},
-      command{cmd} {}
+      command(cmd) {}
 
 // From Command
 int cli::cmd::Help::run(const Context& context) {

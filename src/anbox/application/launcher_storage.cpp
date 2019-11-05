@@ -92,7 +92,8 @@ void LauncherStorage::add_or_update(const Database::Item &item) {
     exec += utils::string_format("--component=%s ", item.launch_intent.component);
 
   const auto item_icon_path = path_for_item_icon(package_name);
-  if (auto desktop_item = std::ofstream(path_for_item(package_name).string())) {
+  std::ofstream desktop_item(path_for_item(package_name).string());
+  if(desktop_item.is_open()) {
     desktop_item << "[Desktop Entry]" << std::endl
                  << "Name=" << item.name << std::endl
                  << "Exec=" << exec << std::endl
@@ -103,7 +104,8 @@ void LauncherStorage::add_or_update(const Database::Item &item) {
     BOOST_THROW_EXCEPTION(std::runtime_error("Failed to create desktop item"));
   }
 
-  if (auto icon = std::ofstream(item_icon_path.string()))
+  std::ofstream icon(item_icon_path.string());
+  if(icon.is_open())
     icon.write(item.icon.data(), item.icon.size());
   else
     BOOST_THROW_EXCEPTION(std::runtime_error("Failed to write icon"));
