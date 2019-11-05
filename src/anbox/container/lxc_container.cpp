@@ -28,6 +28,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <sys/capability.h>
 #include <sys/prctl.h>
@@ -292,8 +293,8 @@ void LxcContainer::start(const Configuration &configuration) {
     container_->stop(container_);
   }
 
+  const auto container_config_dir = SystemConfiguration::instance().container_config_dir();
   if (!container_) {
-    const auto container_config_dir = SystemConfiguration::instance().container_config_dir();
     DEBUG("Containers are stored in %s", container_config_dir);
 
     // Remove container config to be be able to rewrite it
@@ -399,6 +400,24 @@ void LxcContainer::start(const Configuration &configuration) {
   devices.insert({"/dev/zero", {0666}});
   devices.insert({"/dev/tun", {0660, "/dev/net/tun"}});
 
+  const auto extra_bind_mounts_file_path = utils::string_format("%s/default/extra_bind_mounts", container_config_dir);
+  if(fs::exists(extra_bind_mounts_file_path)) {
+    std::string line;
+    std::ifstream in(extra_bind_mounts_file_path.c_str());
+    if(in.is_open()) {
+      while(getline(in, line)) {
+        std::vector<std::string> strs;
+        boost::split(strs, line, boost::is_any_of(" \t"));
+        if(strs.size() == 1 && strs[0] == "") {
+        } else if(strs.size() != 2) {
+          WARNING("unknown bind mount: %s\n", line.c_str());
+        } else if(strs.size() == 2) {
+          bind_mounts.insert({strs[0], strs[1]});
+        }
+      }
+    }
+  }
+  
   // Remove all left over devices from last time first before
   // creating any new ones
   const auto devices_dir = SystemConfiguration::instance().container_devices_dir();
