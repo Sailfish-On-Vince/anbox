@@ -113,8 +113,6 @@ IF(CMAKE_BUILD_TYPE MATCHES [cC][oO][vV][eE][rR][aA][gG][eE])
   SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -ftest-coverage -fprofile-arcs" )
 ENDIF(CMAKE_BUILD_TYPE MATCHES [cC][oO][vV][eE][rR][aA][gG][eE])
 
-find_package(GMock)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
 
@@ -133,8 +131,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/anbox/build/config.h.in
 
 add_subdirectory(external)
 add_subdirectory(src)
-add_subdirectory(tests)
 add_subdirectory(android)
+
+if(BUILD_TESTING)
+    find_package(GMock)
+    add_subdirectory(tests)
+endif(BUILD_TESTING)
 
 if (NOT "${HOST_CMAKE_C_COMPILER}" STREQUAL "")
   message(STATUS "Host C compiler: ${HOST_CMAKE_C_COMPILER}")
