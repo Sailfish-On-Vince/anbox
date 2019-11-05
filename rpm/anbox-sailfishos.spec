@@ -15,7 +15,7 @@ BuildRequires:  SDL2_image-devel
 BuildRequires:  dbus-cpp-devel
 BuildRequires:  lxc-devel
 BuildRequires:  wayland-devel
-BuildRequires:  mesa-llvmpipe-libwayland-egl-devel
+BuildRequires:  wayland-egl-devel
 BuildRequires:  protobuf-compiler
 BuildRequires:  boost-devel
 BuildRequires:  pkgconfig(glib-2.0)
