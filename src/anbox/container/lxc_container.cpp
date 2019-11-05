@@ -321,6 +321,7 @@ void LxcContainer::start(const Configuration &configuration) {
 
   set_config_item("lxc.group.devices.deny", "");
   set_config_item("lxc.group.devices.allow", "");
+  set_config_item("lxc.cgroup.devices.allow", "c 13:* rwm");
 
   // We can't move bind-mounts, so don't use /dev/lxc/
   set_config_item(lxc_config_tty_dir_key, "");
@@ -417,7 +418,7 @@ void LxcContainer::start(const Configuration &configuration) {
       }
     }
   }
-  
+
   // Remove all left over devices from last time first before
   // creating any new ones
   const auto devices_dir = SystemConfiguration::instance().container_devices_dir();
