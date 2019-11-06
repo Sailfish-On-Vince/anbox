@@ -29,7 +29,7 @@ namespace {
 // errors. We should enable calling code to decide whether an exception should
 // be considered
 // fatal or not.
-void exception_safe_run(boost::asio::io_service& service) {
+void exception_safe_run(boost::asio::io_context& service) {
   while (true) {
     try {
       service.run();
@@ -40,7 +40,7 @@ void exception_safe_run(boost::asio::io_service& service) {
     } catch (const std::exception& e) {
       ERROR("%s", e.what());
     } catch (...) {
-      ERROR("Unknown exception caught while executing boost::asio::io_service");
+      ERROR("Unknown exception caught while executing boost::asio::io_context");
     }
   }
 }
