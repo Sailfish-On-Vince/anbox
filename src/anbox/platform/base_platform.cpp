@@ -17,6 +17,7 @@
 
 #include "anbox/platform/base_platform.h"
 #include "anbox/platform/null/platform.h"
+#include "anbox/platform/sailfish/platform.h"
 #include "anbox/platform/sdl/platform.h"
 #include "anbox/logger.h"
 
@@ -27,7 +28,8 @@ std::shared_ptr<BasePlatform> create(const std::string &name,
                                      const Configuration &config) {
   if (name.empty())
     return std::make_shared<NullPlatform>();
-
+  if (name == "sailfish")
+    return std::make_shared<SailfishPlatform>();
   if (name == "sdl")
     return std::make_shared<sdl::Platform>(input_manager, config);
 

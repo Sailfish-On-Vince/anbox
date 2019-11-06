@@ -251,6 +251,8 @@ set(SOURCES
     anbox/platform/base_platform.h
     anbox/platform/null/platform.cpp
     anbox/platform/null/platform.h
+    anbox/platform/sailfish/platform.cpp
+    anbox/platform/sailfish/platform.h
     anbox/platform/sdl/audio_sink.cpp
     anbox/platform/sdl/audio_sink.h
     anbox/platform/sdl/keycode_converter.cpp

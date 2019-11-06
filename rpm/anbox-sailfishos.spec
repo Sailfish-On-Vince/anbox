@@ -74,7 +74,7 @@ if [ "$1" -ge 1 ]; then
    systemctl daemon-reload || true
   # systemctl-user restart anbox-session-manager.service || true
 fi
-# prepare-anbox
+prepare-anbox
 
 %postun
 if [ "$1" -eq 0 ]; then
