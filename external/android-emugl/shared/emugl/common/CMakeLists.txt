@@ -27,7 +27,10 @@ set(COMMON_SOURCES
     thread_store.h
     thread_unittest.cpp
     unique_integer_map.h)
-
+    
+include_directories(
+  ${CMAKE_SOURCE_DIR}/external/android-emugl/shared
+)
 add_library(emugl_common STATIC ${COMMON_SOURCES})
 target_link_libraries(emugl_common
     dl pthread)

@@ -16,7 +16,7 @@
  */
 
 #include "anbox/graphics/layer_composer.h"
-#include "anbox/graphics/emugl/Renderer.h"
+#include "anbox/graphics/renderer.h"
 #include "anbox/logger.h"
 #include "anbox/wm/manager.h"
 

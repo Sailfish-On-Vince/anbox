@@ -30,6 +30,59 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/external/cpu_features/include
 )
 
+if(USE_HEADLESS)
+  set(GRAPHICS_SOURCES
+    anbox/graphics/emugl/DisplayManager.cpp
+    anbox/graphics/dummy_renderable.cpp
+    anbox/graphics/dummy_renderer.h
+    )
+
+  set(GRAPHICS_LIBRARIES
+    boost_program_options #why
+    EGL)
+else(USE_HEADLESS)
+  set(GRAPHICS_SOURCES
+    anbox/graphics/gl_renderer_server.cpp
+    anbox/graphics/gl_renderer_server.h
+    anbox/graphics/opengles_message_processor.cpp
+    anbox/graphics/opengles_message_processor.h
+    anbox/graphics/program_family.cpp
+    anbox/graphics/program_family.h
+    anbox/graphics/emugl/ColorBuffer.cpp
+    anbox/graphics/emugl/ColorBuffer.h
+    anbox/graphics/emugl/DispatchTables.h
+    anbox/graphics/emugl/DisplayManager.cpp
+    anbox/graphics/emugl/DisplayManager.h
+    anbox/graphics/emugl/ReadBuffer.cpp
+    anbox/graphics/emugl/ReadBuffer.h
+    anbox/graphics/emugl/Renderable.cpp
+    anbox/graphics/emugl/Renderable.h
+    anbox/graphics/emugl/RenderApi.cpp
+    anbox/graphics/emugl/RenderApi.h
+    anbox/graphics/emugl/RenderContext.cpp
+    anbox/graphics/emugl/RenderContext.h
+    anbox/graphics/emugl/RenderControl.cpp
+    anbox/graphics/emugl/RenderControl.h
+    anbox/graphics/emugl/RendererConfig.cpp
+    anbox/graphics/emugl/RendererConfig.h
+    anbox/graphics/emugl/Renderer.cpp
+    anbox/graphics/emugl/Renderer.h
+    anbox/graphics/emugl/RenderThread.cpp
+    anbox/graphics/emugl/RenderThread.h
+    anbox/graphics/emugl/RenderThreadInfo.cpp
+    anbox/graphics/emugl/RenderThreadInfo.h
+    anbox/graphics/emugl/TextureDraw.cpp
+    anbox/graphics/emugl/TextureDraw.h
+    anbox/graphics/emugl/TextureResize.cpp
+    anbox/graphics/emugl/TextureResize.h
+    anbox/graphics/emugl/TimeUtils.cpp
+    anbox/graphics/emugl/TimeUtils.h
+    anbox/graphics/emugl/WindowSurface.cpp
+    anbox/graphics/emugl/WindowSurface.h)
+
+  set(GRAPHICS_LIBRARIES GLESv1_dec GLESv2_dec renderControl_dec OpenGLESDispatch OpenglCodecCommon)
+endif(USE_HEADLESS)
+
 protobuf_generate_cpp(
     GENERATED_PROTOBUF_RPC_SRCS GENERATED_PROTOBUF_RPC_HDRS
     anbox/protobuf/anbox_rpc.proto)
@@ -160,54 +213,18 @@ set(SOURCES
     anbox/graphics/density.cpp
     anbox/graphics/density.h
     anbox/graphics/gl_extensions.h
-    anbox/graphics/gl_renderer_server.cpp
-    anbox/graphics/gl_renderer_server.h
     anbox/graphics/layer_composer.cpp
     anbox/graphics/layer_composer.h
     anbox/graphics/multi_window_composer_strategy.cpp
     anbox/graphics/multi_window_composer_strategy.h
-    anbox/graphics/opengles_message_processor.cpp
-    anbox/graphics/opengles_message_processor.h
     anbox/graphics/primitives.h
-    anbox/graphics/program_family.cpp
-    anbox/graphics/program_family.h
     anbox/graphics/rect.cpp
     anbox/graphics/rect.h
     anbox/graphics/renderer.h
     anbox/graphics/single_window_composer_strategy.cpp
     anbox/graphics/single_window_composer_strategy.h
 
-    anbox/graphics/emugl/ColorBuffer.cpp
-    anbox/graphics/emugl/ColorBuffer.h
-    anbox/graphics/emugl/DispatchTables.h
-    anbox/graphics/emugl/DisplayManager.cpp
-    anbox/graphics/emugl/DisplayManager.h
-    anbox/graphics/emugl/ReadBuffer.cpp
-    anbox/graphics/emugl/ReadBuffer.h
-    anbox/graphics/emugl/Renderable.cpp
-    anbox/graphics/emugl/Renderable.h
-    anbox/graphics/emugl/RenderApi.cpp
-    anbox/graphics/emugl/RenderApi.h
-    anbox/graphics/emugl/RenderContext.cpp
-    anbox/graphics/emugl/RenderContext.h
-    anbox/graphics/emugl/RenderControl.cpp
-    anbox/graphics/emugl/RenderControl.h
-    anbox/graphics/emugl/RendererConfig.cpp
-    anbox/graphics/emugl/RendererConfig.h
-    anbox/graphics/emugl/Renderer.cpp
-    anbox/graphics/emugl/Renderer.h
-    anbox/graphics/emugl/RenderThread.cpp
-    anbox/graphics/emugl/RenderThread.h
-    anbox/graphics/emugl/RenderThreadInfo.cpp
-    anbox/graphics/emugl/RenderThreadInfo.h
-    anbox/graphics/emugl/TextureDraw.cpp
-    anbox/graphics/emugl/TextureDraw.h
-    anbox/graphics/emugl/TextureResize.cpp
-    anbox/graphics/emugl/TextureResize.h
-    anbox/graphics/emugl/TimeUtils.cpp
-    anbox/graphics/emugl/TimeUtils.h
-    anbox/graphics/emugl/WindowSurface.cpp
-    anbox/graphics/emugl/WindowSurface.h
+    
 
     anbox/input/device.cpp
     anbox/input/device.h
@@ -348,7 +365,20 @@ set(SOURCES
     anbox/system_configuration.cpp
     anbox/system_configuration.h)
 
-add_library(anbox-core STATIC ${SOURCES})
+if (NOT USE_HEADLESS)
+set(GL_LIBRARIES
+   GLESv1_dec
+   GLESv2_dec
+   renderControl_dec
+   OpenGLESDispatch
+   OpenglCodecCommon
+   )
+else (NOT USE_HEADLESS)
+set(GL_LIBRARIES
+   )
+endif (NOT USE_HEADLESS)
+
+add_library(anbox-core STATIC ${SOURCES} ${GRAPHICS_SOURCES})
 target_link_libraries(anbox-core
   ${AUDIORESOURCE_LDFLAGS}
   ${AUDIORESOURCE_LIBRARIES}
@@ -356,6 +386,7 @@ target_link_libraries(anbox-core
   ${GLIB_LIBRARIES}
   ${Boost_LDFLAGS}
   ${Boost_LIBRARIES}
+  ${GRAPHICS_LIBRARIES}
   ${SDL2_LDFLAGS}
   ${SDL2_LIBRARIES}
   ${SDL2_IMAGE_LDFLAGS}
@@ -370,17 +401,12 @@ target_link_libraries(anbox-core
   pthread
   process-cpp
   emugl_common
-  GLESv1_dec
-  GLESv2_dec
-  renderControl_dec
-  OpenGLESDispatch
-  OpenglCodecCommon
   anbox-protobuf
   xdg)
 
 add_executable(anbox main.cpp ${BACKWARD_ENABLE})
 target_link_libraries(anbox
-    anbox-core)
+    anbox-core ${GRAPHICS_LIBRARIES})
 add_backward(anbox)
 
 install(

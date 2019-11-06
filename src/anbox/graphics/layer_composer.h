@@ -18,7 +18,11 @@
 #ifndef ANBOX_GRAPHICS_LAYER_COMPOSER_H_
 #define ANBOX_GRAPHICS_LAYER_COMPOSER_H_
 
-#include "anbox/graphics/renderer.h"
+#ifdef USE_HEADLESS
+#include "anbox/graphics/dummy_renderer.h"
+#else
+#include "anbox/graphics/emugl/Renderer.h"
+#endif
 
 #include <memory>
 #include <map>

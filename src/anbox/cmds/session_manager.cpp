@@ -184,6 +184,7 @@ anbox::cmds::SessionManager::SessionManager()
     }
 
     const auto should_force_software_rendering = utils::get_env_value("ANBOX_FORCE_SOFTWARE_RENDERING", "false");
+#ifndef USE_HEADLESS    
     auto gl_driver = graphics::GLRendererServer::Config::Driver::Host;
     if (should_force_software_rendering == "true" || use_software_rendering_)
      gl_driver = graphics::GLRendererServer::Config::Driver::Software;
@@ -193,9 +194,11 @@ anbox::cmds::SessionManager::SessionManager()
       single_window_
     };
     auto gl_server = std::make_shared<graphics::GLRendererServer>(renderer_config, window_manager);
-
+#endif
     platform->set_window_manager(window_manager);
+#ifndef USE_HEADLESS    
     platform->set_renderer(gl_server->renderer());
+#endif    
     window_manager->setup();
 
     auto app_manager = std::static_pointer_cast<application::Manager>(android_api_stub);
@@ -211,13 +214,14 @@ anbox::cmds::SessionManager::SessionManager()
 
     const auto socket_path = SystemConfiguration::instance().socket_dir();
 
+#ifndef USE_HEADLESS
     // The qemu pipe is used as a very fast communication channel between guest
     // and host for things like the GLES emulation/translation, the RIL or ADB.
     auto qemu_pipe_connector =
         std::make_shared<network::PublishedSocketConnector>(
             utils::string_format("%s/qemu_pipe", socket_path), rt,
             std::make_shared<qemu::PipeConnectionCreator>(gl_server->renderer(), rt));
-
+#endif
     boost::asio::deadline_timer appmgr_start_timer(rt->service());
 
     auto bridge_connector = std::make_shared<network::PublishedSocketConnector>(
@@ -261,7 +265,9 @@ anbox::cmds::SessionManager::SessionManager()
 
     if (!standalone_) {
       container_configuration.bind_mounts = {
+#ifndef USE_HEADLESS        
         {qemu_pipe_connector->socket_file(), "/dev/qemu_pipe"},
+#endif
         {bridge_connector->socket_file(), "/dev/anbox_bridge"},
         {audio_server->socket_file(), "/dev/anbox_audio"},
         {SystemConfiguration::instance().input_device_dir(), "/dev/input"},

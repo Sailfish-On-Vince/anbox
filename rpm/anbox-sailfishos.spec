@@ -50,7 +50,7 @@ Requires:  libprocess-cpp2
 %build
 mkdir -p build
 cd build
-%cmake -DENABLE_WAYLAND=ON -DENABLE_X11=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debug ..
+%cmake -DUSE_HEADLESS=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debug ..
 make %{?jobs:-j%jobs}
 
 %install

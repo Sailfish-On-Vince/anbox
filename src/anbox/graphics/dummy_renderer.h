@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef ANBOX_GRAPHICS_RENDERER_H_
-#define ANBOX_GRAPHICS_RENDERER_H_
+#ifndef ANBOX_GRAPHICS_DUMMY_RENDERER_H_
+#define ANBOX_GRAPHICS_DUMMY_RENDERER_H_
 
 #ifdef USE_HEADLESS
 #include "anbox/graphics/dummy_renderable.h"
@@ -24,19 +24,18 @@
 #include "anbox/graphics/emugl/Renderable.h"
 #endif
 
+#include "anbox/graphics/renderer.h"
 #include <EGL/egl.h>
 
-namespace anbox {
-namespace graphics {
-class Renderer {
+class Renderer : public anbox::graphics::Renderer {
  public:
-  virtual ~Renderer() {}
+  virtual ~Renderer();
 
-  virtual bool draw(EGLNativeWindowType native_window,
+  void destroyNativeWindow(EGLNativeWindowType native_window) {}
+
+  bool draw(EGLNativeWindowType native_window,
                     const anbox::graphics::Rect& window_frame,
-                    const RenderableList& renderables) = 0;
+                    const RenderableList& renderables) { return false; }
 };
-}  // namespace graphics
-}  // namespace anbox
 
 #endif

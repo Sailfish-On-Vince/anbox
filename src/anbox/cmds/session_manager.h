@@ -24,7 +24,9 @@
 #include <iostream>
 #include <memory>
 
+#ifndef USE_HEADLESS
 #include "anbox/graphics/gl_renderer_server.h"
+#endif
 #include "anbox/graphics/rect.h"
 
 namespace anbox {
@@ -45,7 +47,9 @@ class SessionManager : public cli::CommandWithFlagsAndAction {
   std::shared_ptr<container::Client> container_;
   std::string desktop_file_hint_;
   bool single_window_ = false;
+  #ifndef USE_HEADLESS
   graphics::Rect window_size_;
+  #endif
   bool standalone_ = false;
   bool experimental_ = false;
   bool use_system_dbus_ = false;

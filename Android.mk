@@ -81,6 +81,23 @@ LOCAL_MODULE_TAGS := optional
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE_RELATIVE_PATH := hw
+LOCAL_SHARED_LIBRARIES := \
+    liblog \
+    libEGL
+LOCAL_SRC_FILES := \
+    android/hwcomposer/hwcomposer_wayland.cpp
+LOCAL_MODULE := hwcomposer.wayland
+LOCAL_CFLAGS:= -DLOG_TAG=\"hwcomposer\"
+LOCAL_C_INCLUDES += \
+    $(LOCAL_PATH)/android/opengl/host/include/libOpenglRender \
+    $(LOCAL_PATH)/android/opengl/shared/OpenglCodecCommon \
+    $(LOCAL_PATH)/android/opengl/system/renderControl_enc \
+    $(LOCAL_PATH)/android/opengl/system/OpenglSystemCommon
+LOCAL_MODULE_TAGS := optional
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := audio.primary.goldfish
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_TAGS := optional

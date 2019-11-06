@@ -37,8 +37,10 @@ namespace {
 std::string client_type_to_string(
     const anbox::qemu::PipeConnectionCreator::client_type &type) {
   switch (type) {
+#ifndef USE_HEADLESS    
     case anbox::qemu::PipeConnectionCreator::client_type::opengles:
       return "opengles";
+#endif      
     case anbox::qemu::PipeConnectionCreator::client_type::qemud_boot_properties:
       return "boot-properties";
     case anbox::qemu::PipeConnectionCreator::client_type::qemud_hw_control:

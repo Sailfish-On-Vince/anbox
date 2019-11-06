@@ -16,8 +16,6 @@
  */
 
 #include "anbox/cmds/system_info.h"
-#include "anbox/graphics/emugl/RenderApi.h"
-#include "anbox/graphics/emugl/DispatchTables.h"
 #include "anbox/utils/environment_file.h"
 #include "anbox/logger.h"
 
@@ -27,9 +25,11 @@
 #include <fstream>
 
 #include <boost/filesystem.hpp>
-
+#ifndef USE_HEADLESS
+#include "anbox/graphics/emugl/RenderApi.h"
+#include "anbox/graphics/emugl/DispatchTables.h"
 #include "OpenGLESDispatch/EGLDispatch.h"
-
+#endif
 #include "cpu_features_macros.h"
 #include "cpuinfo_x86.h"
 
@@ -162,6 +162,7 @@ class SystemInformation {
   }
 
   void collect_graphics_info() {
+#ifndef USE_HEADLESS    
     auto gl_libs = anbox::graphics::emugl::default_gl_libraries();
     if (!anbox::graphics::emugl::initialize(gl_libs, nullptr, nullptr)) {
       return;
@@ -214,6 +215,7 @@ class SystemInformation {
         }
       }
     }
+#endif    
   }
 
   struct {
