@@ -1,4 +1,5 @@
 include_directories(
+  ${AUDIORESOURCE_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${MIRCLIENT_INCLUDE_DIRS}
   ${DBUS_INCLUDE_DIRS}
@@ -347,6 +348,10 @@ set(SOURCES
 
 add_library(anbox-core STATIC ${SOURCES})
 target_link_libraries(anbox-core
+  ${AUDIORESOURCE_LDFLAGS}
+  ${AUDIORESOURCE_LIBRARIES}
+  ${GLIB_LDFLAGS}
+  ${GLIB_LIBRARIES}
   ${Boost_LDFLAGS}
   ${Boost_LIBRARIES}
   ${SDL2_LDFLAGS}
