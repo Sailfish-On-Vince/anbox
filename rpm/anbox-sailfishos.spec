@@ -50,7 +50,7 @@ Requires:  libprocess-cpp2
 %build
 mkdir -p build
 cd build
-%cmake -DUSE_HEADLESS=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debug ..
+%cmake -DENABLE_WAYLAND=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debug ..
 make %{?jobs:-j%jobs}
 
 %install
@@ -74,7 +74,7 @@ if [ "$1" -ge 1 ]; then
    systemctl daemon-reload || true
   # systemctl-user restart anbox-session-manager.service || true
 fi
-prepare-anbox
+# prepare-anbox
 
 %postun
 if [ "$1" -eq 0 ]; then

@@ -27,6 +27,7 @@ gcc -o $workdir/uidmapshift external/nsexec/uidmapshift.c
 sudo $workdir/uidmapshift -b $rootfs 0 100000 65536
 
 # FIXME
+sudo cp -a scripts/anbox-init.sh $rootfs/anbox-init.sh
 sudo chmod +x $rootfs/anbox-init.sh
 
 sudo mksquashfs $rootfs android.img -comp xz -no-xattrs
