@@ -96,6 +96,8 @@ if (ENABLE_TOUCH_INPUT)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_TOUCH_INPUT")
 endif()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEGL_NO_X11 -DMESA_EGL_NO_X11_HEADERS -DCPU_FEATURES_ARCH_ARM")
+
 #####################################################################
 # Enable code coverage calculation with gcov/gcovr/lcov
 # Usage:
