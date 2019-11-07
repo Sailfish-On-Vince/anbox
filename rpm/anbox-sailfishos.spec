@@ -68,6 +68,11 @@ install -Dm 644 %{_sourcedir}/anbox-container-manager.service %{buildroot}/%{_un
 install -Dm 644 %{_sourcedir}/anbox-session-manager.service %{buildroot}/%{_libdir}/systemd/user/anbox-session-manager.service
 install -Dm 644 %{_sourcedir}/anbox.desktop %{buildroot}/%{_datadir}/applications/anbox.desktop
 install -Dm 644 snap/gui/icon.png %{buildroot}/%{_datadir}/icons/hicolor/512x512/apps/anbox.png
+rm -rf %{buildroot}/%{_libdir}/cmake
+rm -rf %{buildroot}/%{_libdir}/backward
+rm -rf %{buildroot}/%{_includedir}/cpu_features
+rm -rf %{buildroot}/%{_includedir}/cpu_features
+rm -rf %{buildroot}/%{_includedir}/backward.hpp
 
 %post
 if [ "$1" -ge 1 ]; then
@@ -89,6 +94,7 @@ fi
 %defattr(-,root,root,-)
 #%doc README COPYING
 %{_bindir}/anbox
+%{_bindir}/list_cpu_features
 %{_bindir}/anbox.sh
 %{_bindir}/prepare-anbox
 %{_bindir}/anbox-bridge.sh
@@ -99,3 +105,4 @@ fi
 %{_datadir}/applications/anbox.desktop
 %{_datadir}/icons/hicolor/512x512/apps/anbox.png
 %{_datadir}/anbox/ui/loading-screen.png
+%{_libdir}/libcpu_features.so
