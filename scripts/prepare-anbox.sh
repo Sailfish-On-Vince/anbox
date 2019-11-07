@@ -83,9 +83,11 @@ for f in $DEPS; do
         FULL_NAME=$(find /system/lib/ | grep $(basename $f))
     fi
     if [ "$FULL_NAME" != "" ]; then
-        echo $f" -> "$FULL_NAME
-        mkdir -p $(dirname $OVERLAY_DIR/$FULL_NAME)
-        cp $FULL_NAME $OVERLAY_DIR/$FULL_NAME
+        for i in $FULL_NAME; do
+            echo $f" -> "$i
+            mkdir -p $(dirname $OVERLAY_DIR/$i)
+            cp $FULL_NAME $OVERLAY_DIR/$i
+        done
     else
         echo "ignoring possibly optional dependancy: $f"
     fi
@@ -109,9 +111,11 @@ for f in $DEPS; do
         FULL_NAME=$(find /system/lib64/ | grep $(basename $f))
     fi
     if [ "$FULL_NAME" != "" ]; then
-        echo $f" -> "$FULL_NAME
-        mkdir -p $(dirname $OVERLAY_DIR/$FULL_NAME)
-        cp $FULL_NAME $OVERLAY_DIR/$FULL_NAME
+        for i in $FULL_NAME; do
+            echo $f" -> "$i
+            mkdir -p $(dirname $OVERLAY_DIR/$i)
+            cp $FULL_NAME $OVERLAY_DIR/$i
+        done
     else
         echo "ignoring possibly optional dependancy: $f"
     fi
@@ -120,8 +124,8 @@ done
 mkdir -p $OVERLAY_DIR/vendor/lib/egl
 mkdir -p $OVERLAY_DIR/system/lib/egl
 mkdir -p $OVERLAY_DIR/system/lib/hw
-cp /system/lib/egl/egl.cfg $OVERLAY_DIR/system/lib/egl/egl.cfg || true
-cp /system/lib64/egl/egl.cfg $OVERLAY_DIR/system/lib64/egl/egl.cfg || true
+cp /system/lib/egl/egl.cfg $OVERLAY_DIR/system/lib/egl/egl.cfg || :
+cp /system/lib64/egl/egl.cfg $OVERLAY_DIR/system/lib64/egl/egl.cfg || :
 if [ -f "/system/lib/hw/gralloc.$(getprop ro.product.device).so" ];
 then
   cp /system/lib/hw/gralloc.$(getprop ro.product.device).so $OVERLAY_DIR/system/lib/hw/gralloc.default.so
