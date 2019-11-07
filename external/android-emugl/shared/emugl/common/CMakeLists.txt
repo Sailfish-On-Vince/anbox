@@ -11,7 +11,6 @@ set(COMMON_SOURCES
     message_channel.cpp
     message_channel.h
     mutex.h
-    mutex_unittest.cpp
     pod_vector.cpp
     pod_vector.h
     scoped_pointer_vector.h
@@ -25,7 +24,6 @@ set(COMMON_SOURCES
     thread_pthread.cpp
     thread_store.cpp
     thread_store.h
-    thread_unittest.cpp
     unique_integer_map.h)
     
 include_directories(

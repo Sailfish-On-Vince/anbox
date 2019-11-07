@@ -20,6 +20,7 @@
 CPU_FEATURES_START_CPP_NAMESPACE
 
 // See https://en.wikipedia.org/wiki/CPUID for a list of x86 cpu features.
+// The field names are based on the short name provided in the wikipedia tables.
 typedef struct {
   int aes : 1;
   int erms : 1;
@@ -55,6 +56,10 @@ typedef struct {
   int smx : 1;
   int sgx : 1;
   int cx16 : 1;  // aka. CMPXCHG16B
+  int sha : 1;
+  int popcnt : 1;
+  int movbe : 1;
+  int rdrnd : 1;
 
   // Make sure to update X86FeaturesEnum below if you add a field here.
 } X86Features;
@@ -140,6 +145,10 @@ typedef enum {
   X86_SMX,
   X86_SGX,
   X86_CX16,
+  X86_SHA,
+  X86_POPCNT,
+  X86_MOVBE,
+  X86_RDRND,
   X86_LAST_,
 } X86FeaturesEnum;
 
@@ -150,5 +159,9 @@ const char* GetX86FeaturesEnumName(X86FeaturesEnum);
 const char* GetX86MicroarchitectureName(X86Microarchitecture);
 
 CPU_FEATURES_END_CPP_NAMESPACE
+
+#if !defined(CPU_FEATURES_ARCH_X86)
+#error "Including cpuinfo_x86.h from a non-x86 target."
+#endif
 
 #endif  // CPU_FEATURES_INCLUDE_CPUINFO_X86_H_

@@ -19,7 +19,9 @@
 #include "anbox/utils.h"
 
 #include "cpu_features_macros.h"
-#include "cpuinfo_x86.h"
+#if defined(CPU_FEATURES_ARCH_ARM)
+#include "cpuinfo_arm.h"
+#endif
 
 namespace {
 std::vector<std::string> cpu_whitelist = {

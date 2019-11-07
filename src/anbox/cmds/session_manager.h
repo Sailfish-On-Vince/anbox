@@ -47,9 +47,7 @@ class SessionManager : public cli::CommandWithFlagsAndAction {
   std::shared_ptr<container::Client> container_;
   std::string desktop_file_hint_;
   bool single_window_ = false;
-  #ifndef USE_HEADLESS
   graphics::Rect window_size_;
-  #endif
   bool standalone_ = false;
   bool experimental_ = false;
   bool use_system_dbus_ = false;

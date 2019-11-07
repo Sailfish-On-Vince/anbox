@@ -19,6 +19,57 @@
 #include <stdbool.h>
 #include <string.h>
 
+#if !defined(CPU_FEATURES_ARCH_X86)
+#error "Cannot compile cpuinfo_x86 on a non x86 platform."
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// Definitions for CpuId and GetXCR0Eax.
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined(CPU_FEATURES_MOCK_CPUID_X86)
+// Implementation will be provided by test/cpuinfo_x86_test.cc.
+#elif defined(CPU_FEATURES_COMPILER_CLANG) || defined(CPU_FEATURES_COMPILER_GCC)
+
+#include <cpuid.h>
+
+Leaf CpuId(uint32_t leaf_id) {
+  Leaf leaf;
+  __cpuid_count(leaf_id, 0, leaf.eax, leaf.ebx, leaf.ecx, leaf.edx);
+  return leaf;
+}
+
+uint32_t GetXCR0Eax(void) {
+  uint32_t eax, edx;
+  /* named form of xgetbv not supported on OSX, so must use byte form, see:
+     https://github.com/asmjit/asmjit/issues/78
+   */
+  __asm(".byte 0x0F, 0x01, 0xd0" : "=a"(eax), "=d"(edx) : "c"(0));
+  return eax;
+}
+
+#elif defined(CPU_FEATURES_COMPILER_MSC)
+
+#include <immintrin.h>
+#include <intrin.h>  // For __cpuidex()
+
+Leaf CpuId(uint32_t leaf_id) {
+  Leaf leaf;
+  int data[4];
+  __cpuid(data, leaf_id);
+  leaf.eax = data[0];
+  leaf.ebx = data[1];
+  leaf.ecx = data[2];
+  leaf.edx = data[3];
+  return leaf;
+}
+
+uint32_t GetXCR0Eax(void) { return _xgetbv(0); }
+
+#else
+#error "Unsupported compiler, x86 cpuid requires either GCC, Clang or MSVC."
+#endif
+
 static const Leaf kEmptyLeaf;
 
 static Leaf SafeCpuId(uint32_t max_cpuid_leaf, uint32_t leaf_id) {
@@ -97,12 +148,16 @@ static void ParseCpuId(const uint32_t max_cpuid_leaf, X86Info* info) {
 
   features->smx = IsBitSet(leaf_1.ecx, 6);
   features->cx16 = IsBitSet(leaf_1.ecx, 13);
+  features->movbe = IsBitSet(leaf_1.ecx, 22);
+  features->popcnt = IsBitSet(leaf_1.ecx, 23);
   features->aes = IsBitSet(leaf_1.ecx, 25);
   features->f16c = IsBitSet(leaf_1.ecx, 29);
+  features->rdrnd = IsBitSet(leaf_1.ecx, 30);
   features->sgx = IsBitSet(leaf_7.ebx, 2);
   features->bmi1 = IsBitSet(leaf_7.ebx, 3);
   features->bmi2 = IsBitSet(leaf_7.ebx, 8);
   features->erms = IsBitSet(leaf_7.ebx, 9);
+  features->sha = IsBitSet(leaf_7.ebx, 29);
   features->vpclmulqdq = IsBitSet(leaf_7.ecx, 10);
 
   if (have_sse_os_support) {
@@ -149,7 +204,7 @@ X86Info GetX86Info(void) {
   return info;
 }
 
-#define CPUID(FAMILY, MODEL) (((FAMILY & 0xFF) << 8) | (MODEL & 0xFF))
+#define CPUID(FAMILY, MODEL) ((((FAMILY)&0xFF) << 8) | ((MODEL)&0xFF))
 
 X86Microarchitecture GetX86Microarchitecture(const X86Info* info) {
   if (memcmp(info->vendor, "GenuineIntel", sizeof(info->vendor)) == 0) {
@@ -322,6 +377,14 @@ int GetX86FeaturesEnumValue(const X86Features* features,
       return features->sgx;
     case X86_CX16:
       return features->cx16;
+    case X86_SHA:
+      return features->sha;
+    case X86_POPCNT:
+      return features->popcnt;
+    case X86_MOVBE:
+      return features->movbe;
+    case X86_RDRND:
+      return features->rdrnd;
     case X86_LAST_:
       break;
   }
@@ -390,6 +453,14 @@ const char* GetX86FeaturesEnumName(X86FeaturesEnum value) {
       return "sgx";
     case X86_CX16:
       return "cx16";
+    case X86_SHA:
+      return "sha";
+    case X86_POPCNT:
+      return "popcnt";
+    case X86_MOVBE:
+      return "movbe";
+    case X86_RDRND:
+      return "rdrnd";
     case X86_LAST_:
       break;
   }

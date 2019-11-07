@@ -17,11 +17,18 @@
 #include <string.h>
 
 #include "cpu_features_macros.h"
-#include "cpuinfo_aarch64.h"
-#include "cpuinfo_arm.h"
-#include "cpuinfo_mips.h"
-#include "cpuinfo_ppc.h"
+
+#if defined(CPU_FEATURES_ARCH_X86)
 #include "cpuinfo_x86.h"
+#elif defined(CPU_FEATURES_ARCH_ARM)
+#include "cpuinfo_arm.h"
+#elif defined(CPU_FEATURES_ARCH_AARCH64)
+#include "cpuinfo_aarch64.h"
+#elif defined(CPU_FEATURES_ARCH_MIPS)
+#include "cpuinfo_mips.h"
+#elif defined(CPU_FEATURES_ARCH_PPC)
+#include "cpuinfo_ppc.h"
+#endif
 
 static void PrintEscapedAscii(const char* str) {
   putchar('"');
@@ -187,10 +194,12 @@ static void PrintFeatures(const Printer printer) {
   PrintN(printer, "revision", info.revision);
   PrintFlags(printer, &info.features);
 #elif defined(CPU_FEATURES_ARCH_MIPS)
+  (void)&PrintN;  // Remove unused function warning.
   const MipsInfo info = GetMipsInfo();
   PrintS(printer, "arch", "mips");
   PrintFlags(printer, &info.features);
 #elif defined(CPU_FEATURES_ARCH_PPC)
+  (void)&PrintN;  // Remove unused function warning.
   const PPCInfo info = GetPPCInfo();
   const PPCPlatformStrings strings = GetPPCPlatformStrings();
   PrintS(printer, "arch", "ppc");

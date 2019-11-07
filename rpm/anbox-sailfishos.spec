@@ -8,6 +8,7 @@ URL:        https://github.com/Sailfish-On-Vince/anbox
 Source:     %{name}-%{version}.tar.gz
 
 BuildRequires:  cmake
+BuildRequires:  systemd-devel
 BuildRequires:  mesa-llvmpipe-libEGL-devel
 BuildRequires:  mesa-llvmpipe-libGLESv2-devel
 BuildRequires:  SDL2-devel
@@ -50,7 +51,7 @@ Requires:  libprocess-cpp2
 %build
 mkdir -p build
 cd build
-%cmake -DUSE_HEADLESS=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debug ..
+%cmake -DUSE_HEADLESS=ON -DBUILD_TESTING=OFF -DENABLE_X11=OFF -DCMAKE_BUILD_TYPE=Debug ..
 make %{?jobs:-j%jobs}
 
 %install

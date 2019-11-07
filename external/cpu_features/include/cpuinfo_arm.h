@@ -15,6 +15,7 @@
 #ifndef CPU_FEATURES_INCLUDE_CPUINFO_ARM_H_
 #define CPU_FEATURES_INCLUDE_CPUINFO_ARM_H_
 
+#include <stdint.h>  // uint32_t
 #include "cpu_features_macros.h"
 
 CPU_FEATURES_START_CPP_NAMESPACE
@@ -51,6 +52,9 @@ typedef struct {
 
 ArmInfo GetArmInfo(void);
 
+// Compute CpuId from ArmInfo.
+uint32_t GetArmCpuId(const ArmInfo* const info);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Introspection functions
 
@@ -76,5 +80,9 @@ int GetArmFeaturesEnumValue(const ArmFeatures* features, ArmFeaturesEnum value);
 const char* GetArmFeaturesEnumName(ArmFeaturesEnum);
 
 CPU_FEATURES_END_CPP_NAMESPACE
+
+#if !defined(CPU_FEATURES_ARCH_ARM)
+#error "Including cpuinfo_arm.h from a non-arm target."
+#endif
 
 #endif  // CPU_FEATURES_INCLUDE_CPUINFO_ARM_H_

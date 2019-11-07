@@ -31,7 +31,12 @@
 #include "OpenGLESDispatch/EGLDispatch.h"
 #endif
 #include "cpu_features_macros.h"
-#include "cpuinfo_x86.h"
+
+// Hard code
+#if defined(CPU_FEATURES_ARCH_ARM)
+#include "cpuinfo_arm.h"
+#endif
+
 
 namespace fs = boost::filesystem;
 

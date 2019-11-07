@@ -1,6 +1,9 @@
 include_directories(
   ${AUDIORESOURCE_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  ${GLIB_INCLUDE_DIRS}
+  ${GIO_INCLUDE_DIRS}
+  ${GIO-UNIX_INCLUDE_DIRS}
   ${MIRCLIENT_INCLUDE_DIRS}
   ${DBUS_INCLUDE_DIRS}
   ${SDL2_INCLUDE_DIRS}
@@ -401,6 +404,7 @@ target_link_libraries(anbox-core
   pthread
   process-cpp
   emugl_common
+  ${GL_LIBRARIES}
   anbox-protobuf
   xdg)
 
